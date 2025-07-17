@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>交易所注册链接</title>
   <style>
@@ -47,6 +47,31 @@
     .btn:hover {
       background-color: #0b7dda;
     }
+
+    /* 微信提示层样式 */
+    #weixin-tip {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      text-align: center;
+      color: #fff;
+    }
+    #weixin-tip img {
+      width: 80%;
+      max-width: 400px;
+      margin-top: 80px;
+    }
+    #weixin-tip p {
+      margin-top: 20px;
+      font-size: 18px;
+      padding: 0 20px;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -60,7 +85,23 @@
     <a class="btn" href="https://biyapay.com/re/34153828">BiyaPay交易所</a>
     <a class="btn" href="https://t.me/+7M2YwE-mq08xNDJl">优质空投研究所</a>
     <a class="btn" href="tutorial.html">教程</a> 
-    <a class="btn" href="#">公众号：扩列互推社交</a> <!-- ✅ 放到这里 -->
+    <a class="btn" href="#">公众号：扩列互推社交</a>
   </div>
+
+  <!-- 微信内提示层：放在 body 末尾 -->
+  <div id="weixin-tip">
+    <img src="pop-up.png" alt="在浏览器中打开指引" />
+    <p>请点击右上角“...”<br>选择“在浏览器中打开”</p>
+  </div>
+
+  <script>
+    // 检测是否在微信内置浏览器
+    function isWeixin() {
+      return /micromessenger/i.test(navigator.userAgent);
+    }
+    if (isWeixin()) {
+      document.getElementById('weixin-tip').style.display = 'block';
+    }
+  </script>
 </body>
 </html>
