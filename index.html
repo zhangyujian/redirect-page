@@ -62,8 +62,12 @@
     }
     .ad-slot img {
       width: 100%;
+      max-width: 280px; /* 限定图片宽度略小于按钮宽度，看起来更协调 */
+      max-height: 150px; /* 限定最大高度，避免图片过长影响布局，调整为按钮高度的2-3倍 */
       height: auto;
       display: block;
+      object-fit: contain; /* 保持图片比例，不变形 */
+      margin: 0 auto; /* 居中 */
     }
     .ad-slot a {
       text-decoration: none;
@@ -120,6 +124,10 @@
         max-width: 100%;
         padding: 8px;
       }
+      .ad-slot img {
+        max-width: 100%; /* 手机上全宽适应 */
+        max-height: 120px; /* 手机上缩小高度，避免过长 */
+      }
       .ad-slot a {
         font-size: 14px;
       }
@@ -146,6 +154,9 @@
       }
       .ad-slot {
         padding: 5px;
+      }
+      .ad-slot img {
+        max-height: 100px; /* 更小屏进一步缩小 */
       }
       .ad-slot a {
         font-size: 12px;
