@@ -32,12 +32,12 @@
       color: white;
       padding: 14px 28px;
       text-decoration: none;
-      font-size: 18px;
+      font-size: 20px; /* 文字稍微大一点，从18px增加到20px */
       border: none;
       border-radius: 6px;
       cursor: pointer;
       width: 100%;
-      max-width: 300px;
+      max-width: 250px; /* 按钮长度短一点，从300px减少到250px */
       box-sizing: border-box;
       display: block;
       text-align: center;
@@ -51,7 +51,7 @@
     /* 新增广告位样式 */
     .ad-slot {
       width: 100%;
-      max-width: 300px;
+      max-width: 250px; /* 与按钮宽度一致，看起来协调 */
       margin: 20px auto 0;
       border-radius: 6px;
       overflow: hidden;
@@ -62,12 +62,12 @@
     }
     .ad-slot img {
       width: 100%;
-      max-width: 280px; /* 限定图片宽度略小于按钮宽度，看起来更协调 */
-      max-height: 150px; /* 限定最大高度，避免图片过长影响布局，调整为按钮高度的2-3倍 */
+      max-width: 230px; /* 图片宽度略小于按钮宽度 */
+      max-height: 150px;
       height: auto;
       display: block;
-      object-fit: contain; /* 保持图片比例，不变形 */
-      margin: 0 auto; /* 居中 */
+      object-fit: contain;
+      margin: 0 auto;
     }
     .ad-slot a {
       text-decoration: none;
@@ -117,7 +117,7 @@
       }
       .btn {
         padding: 12px 20px;
-        font-size: 16px;
+        font-size: 18px; /* 手机端文字调整为18px，保持稍大但不溢出 */
         max-width: 100%;
       }
       .ad-slot {
@@ -125,8 +125,8 @@
         padding: 8px;
       }
       .ad-slot img {
-        max-width: 100%; /* 手机上全宽适应 */
-        max-height: 120px; /* 手机上缩小高度，避免过长 */
+        max-width: 100%;
+        max-height: 120px;
       }
       .ad-slot a {
         font-size: 14px;
@@ -150,13 +150,13 @@
       }
       .btn {
         padding: 10px 15px;
-        font-size: 14px;
+        font-size: 16px; /* 更小屏进一步调整 */
       }
       .ad-slot {
         padding: 5px;
       }
       .ad-slot img {
-        max-height: 100px; /* 更小屏进一步缩小 */
+        max-height: 100px;
       }
       .ad-slot a {
         font-size: 12px;
