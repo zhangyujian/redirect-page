@@ -17,14 +17,14 @@
     }
     header {
       text-align: center;
-      padding: 40px 0;
+      padding: 40px 20px; /* 手机上减少侧边padding */
       background-color: #007bff;
       color: white;
       border-radius: 0 0 20px 20px;
     }
     h1 {
       margin: 0;
-      font-size: 2.5em;
+      font-size: 2em; /* 手机上稍小 */
     }
     section {
       background-color: white;
@@ -37,10 +37,11 @@
       color: #007bff;
       border-bottom: 2px solid #007bff;
       padding-bottom: 10px;
-      font-size: 1.8em;
+      font-size: 1.5em; /* 手机上调整 */
     }
     ol, ul {
       margin-left: 20px;
+      padding-left: 10px; /* 手机上减少缩进 */
     }
     li {
       margin-bottom: 10px;
@@ -64,6 +65,49 @@
     }
     a:hover {
       text-decoration: underline;
+    }
+
+    /* 响应式设计：媒体查询 */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px; /* 手机上减少外边距 */
+      }
+      header {
+        padding: 20px 10px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+      h2 {
+        font-size: 1.4em;
+      }
+      section {
+        padding: 15px;
+        margin: 10px 0;
+      }
+      ol, ul {
+        margin-left: 10px;
+        padding-left: 5px;
+      }
+      .note {
+        font-size: 0.95em;
+      }
+      footer {
+        font-size: 0.8em;
+        padding: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.5em;
+      }
+      h2 {
+        font-size: 1.2em;
+      }
+      p, li {
+        font-size: 0.95em;
+      }
     }
   </style>
 </head>
@@ -113,7 +157,7 @@
       <li>选择邮箱或手机号注册，输入验证码。</li>
       <li>设置密码，同意协议，完成注册。</li>
     </ol>
-    <div class="note">可填写邀请码（55394924）享优惠。立即启用二次验证。</div>
+    <div class="note">可填写邀请码（如55394924）享优惠。立即启用二次验证。</div>
   </section>
 
   <section>
