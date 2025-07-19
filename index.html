@@ -48,6 +48,32 @@
       background-color: #0b7dda;
     }
 
+    /* 新增广告位样式 */
+    .ad-slot {
+      width: 100%;
+      max-width: 300px;
+      margin: 20px auto 0;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      background-color: #fff;
+      padding: 10px;
+      text-align: center;
+    }
+    .ad-slot img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .ad-slot a {
+      text-decoration: none;
+      color: #333;
+      font-size: 16px;
+    }
+    .ad-slot:hover {
+      opacity: 0.9;
+    }
+
     /* 微信提示层样式 */
     #weixin-tip {
       display: none;
@@ -72,6 +98,65 @@
       padding: 0 20px;
       line-height: 1.5;
     }
+
+    /* 响应式设计：媒体查询 */
+    @media (max-width: 768px) {
+      body {
+        padding: 30px 10px;
+      }
+      h2 {
+        font-size: 20px;
+      }
+      .button-container {
+        max-width: 100%;
+        gap: 10px;
+      }
+      .btn {
+        padding: 12px 20px;
+        font-size: 16px;
+        max-width: 100%;
+      }
+      .ad-slot {
+        max-width: 100%;
+        padding: 8px;
+      }
+      .ad-slot a {
+        font-size: 14px;
+      }
+      #weixin-tip img {
+        width: 90%;
+        margin-top: 50px;
+      }
+      #weixin-tip p {
+        font-size: 16px;
+        padding: 0 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 20px 5px;
+      }
+      h2 {
+        font-size: 18px;
+      }
+      .btn {
+        padding: 10px 15px;
+        font-size: 14px;
+      }
+      .ad-slot {
+        padding: 5px;
+      }
+      .ad-slot a {
+        font-size: 12px;
+      }
+      #weixin-tip img {
+        margin-top: 30px;
+      }
+      #weixin-tip p {
+        font-size: 14px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -86,6 +171,13 @@
     <a class="btn" href="https://t.me/+7M2YwE-mq08xNDJl">优质空投研究所</a>
     <a class="btn" href="tutorial.html">教程</a> 
     <a class="btn" href="ad.html">1美金广告位 </a>
+    <!-- 客户广告位：放在按钮列表底部 -->
+    <div class="ad-slot">
+      <a href="客户广告链接" target="_blank">
+        <img src="images/client-ad.jpg" alt="客户广告">
+      </a>
+      <p>客户广告文字（可选）</p>
+    </div>
   </div>
 
   <!-- 微信内提示层：放在 body 末尾 -->
