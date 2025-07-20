@@ -48,7 +48,7 @@
       background-color: #0b7dda;
     }
 
-    /* 新增广告位样式 */
+    /* 新增广告位样式 - 轮播 */
     .ad-slot {
       width: 100%;
       max-width: 250px; /* 与按钮宽度一致，看起来协调 */
@@ -59,23 +59,58 @@
       background-color: #fff;
       padding: 10px;
       text-align: center;
+      position: relative;
     }
-    .ad-slot img {
+
+    .ad-slider {
       width: 100%;
-      max-width: 230px; /* 图片宽度略小于按钮宽度 */
-      max-height: 150px;
-      height: auto;
-      display: block;
-      object-fit: contain;
-      margin: 0 auto;
+      height: 150px; /* 固定高度，平铺拉伸 */
+      overflow: hidden;
+      position: relative;
     }
-    .ad-slot a {
+
+    .ad-slide {
+      width: 100%;
+      height: 100%;
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .ad-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* 平铺拉伸，覆盖整个区域 */
+      display: block;
+    }
+
+    .ad-slide a {
       text-decoration: none;
       color: #333;
       font-size: 16px;
     }
-    .ad-slot:hover {
-      opacity: 0.9;
+
+    /* 显示当前滑块 */
+    .ad-slide.active {
+      display: block;
+    }
+
+    /* 自动播放样式 */
+    @keyframes slide {
+      0% { transform: translateX(0); }
+      20% { transform: translateX(0); }
+      25% { transform: translateX(-100%); }
+      45% { transform: translateX(-100%); }
+      50% { transform: translateX(-200%); }
+      70% { transform: translateX(-200%); }
+      75% { transform: translateX(-300%); }
+      95% { transform: translateX(-300%); }
+      100% { transform: translateX(0); }
+    }
+
+    .ad-slider {
+      animation: slide 15s infinite; /* 每张图片显示3秒，总时长15秒 */
     }
 
     /* 微信提示层样式 */
@@ -116,17 +151,16 @@
         gap: 10px;
       }
       .btn {
-        padding: 10px 18px; /* 手机端padding减少，使按钮“短一点”（高度更短） */
-        font-size: 20px; /* 手机端文字大一点，保持20px */
+        padding: 10px 18px;
+        font-size: 20px;
         max-width: 100%;
       }
       .ad-slot {
         max-width: 100%;
         padding: 8px;
       }
-      .ad-slot img {
-        max-width: 100%;
-        max-height: 120px;
+      .ad-slider {
+        height: 120px; /* 手机端高度调整 */
       }
       .ad-slot a {
         font-size: 14px;
@@ -149,14 +183,14 @@
         font-size: 18px;
       }
       .btn {
-        padding: 8px 15px; /* 更小屏进一步减少padding，使按钮更短 */
-        font-size: 18px; /* 文字保持稍大 */
+        padding: 8px 15px;
+        font-size: 18px;
       }
       .ad-slot {
         padding: 5px;
       }
-      .ad-slot img {
-        max-height: 100px;
+      .ad-slider {
+        height: 100px; /* 更小屏进一步调整 */
       }
       .ad-slot a {
         font-size: 12px;
@@ -182,12 +216,35 @@
     <a class="btn" href="https://t.me/+7M2YwE-mq08xNDJl">优质空投研究所</a>
     <a class="btn" href="tutorial.html">教程</a> 
     <a class="btn" href="ad.html">1美金广告位 </a>
-    <!-- 客户广告位：放在按钮列表底部 -->
+    <!-- 客户广告位：改为5个轮播页面 -->
     <div class="ad-slot">
-      <a href="客户广告链接" target="_blank">
-        <img src="images/client-ad.png" alt="客户广告">
-      </a>
-      <p>客户广告文字（可选）</p>
+      <div class="ad-slider">
+        <div class="ad-slide active">
+          <a href="客户广告链接1" target="_blank">
+            <img src="images/ad1.png" alt="广告1">
+          </a>
+        </div>
+        <div class="ad-slide">
+          <a href="客户广告链接2" target="_blank">
+            <img src="images/ad2.png" alt="广告2">
+          </a>
+        </div>
+        <div class="ad-slide">
+          <a href="客户广告链接3" target="_blank">
+            <img src="images/ad3.png" alt="广告3">
+          </a>
+        </div>
+        <div class="ad-slide">
+          <a href="客户广告链接4" target="_blank">
+            <img src="images/ad4.png" alt="广告4">
+          </a>
+        </div>
+        <div class="ad-slide">
+          <a href="客户广告链接5" target="_blank">
+            <img src="images/ad5.png" alt="广告5">
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 
