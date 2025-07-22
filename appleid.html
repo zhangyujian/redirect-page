@@ -60,25 +60,30 @@
       color: #777;
     }
 
-    /* 响应式设计 */
+    /* 响应式设计：媒体查询 */
     @media (max-width: 768px) {
       body {
-        padding: 10px;
+        padding: 15px 10px; /* 减少padding */
       }
       header {
         padding: 20px 10px;
       }
       h1 {
-        font-size: 1.8em;
+        font-size: 1.6em; /* 稍小标题 */
       }
       h2 {
-        font-size: 1.3em;
+        font-size: 1.2em; /* 调整子标题 */
       }
       section {
         padding: 15px;
+        margin: 15px 0;
+      }
+      ol, ul {
+        margin-left: 15px; /* 减少缩进 */
       }
       .note {
-        font-size: 0.95em;
+        font-size: 0.9em; /* 缩小提示文字 */
+        padding: 8px;
       }
       footer {
         font-size: 0.8em;
@@ -87,14 +92,24 @@
     }
 
     @media (max-width: 480px) {
+      body {
+        padding: 10px 5px; /* 更小padding */
+      }
       h1 {
-        font-size: 1.5em;
+        font-size: 1.4em; /* 进一步缩小标题 */
       }
       h2 {
-        font-size: 1.1em;
+        font-size: 1.1em; /* 更小子标题 */
       }
       p, li {
-        font-size: 0.95em;
+        font-size: 0.9em; /* 缩小正文和列表文字 */
+      }
+      section {
+        padding: 10px;
+      }
+      .note {
+        font-size: 0.85em; /* 更小提示 */
+        padding: 6px;
       }
     }
   </style>
