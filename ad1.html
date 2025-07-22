@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>广告页</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      flex-direction: row;
+      flex-wrap: nowrap;
+    }
+
+    .big-text {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .big-text span {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 10vw; /* 字体大小相对屏幕宽度 */
+      font-weight: bold;
+      text-align: center;
+      word-break: break-word;
+    }
+
+    @media (max-width: 768px) {
+      .big-text span {
+        font-size: 15vw;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .big-text span {
+        font-size: 20vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="big-text">
+    <span>别</span>
+    <span>看</span>
+    <span>，</span>
+    <span>这</span>
+    <span>只</span>
+    <span>是</span>
+    <span>一</span>
+    <span>条</span>
+    <span>广</span>
+    <span>告</span>
+    <span>！</span>
+  </div>
+</body>
+</html>
