@@ -67,6 +67,28 @@
       text-decoration: underline;
     }
 
+    /* 新增导航按钮样式 */
+    .center {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .btn {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-block;
+      margin: 0 10px;
+      transition: background-color 0.3s;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+
     /* 响应式设计：媒体查询 */
     @media (max-width: 768px) {
       body {
@@ -96,6 +118,14 @@
         font-size: 0.8em;
         padding: 10px;
       }
+      .center {
+        margin-top: 15px;
+      }
+      .btn {
+        padding: 8px 15px;
+        font-size: 14px;
+        margin: 0 5px;
+      }
     }
 
     @media (max-width: 480px) {
@@ -107,6 +137,11 @@
       }
       p, li {
         font-size: 0.95em;
+      }
+      .btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        margin: 0 3px;
       }
     }
   </style>
@@ -218,6 +253,11 @@
     </ul>
     <div class="note">定期更新App。如果需要视频演示，搜索YouTube“OKX iOS教程”。</div>
   </section>
+
+  <div class="center">
+    <a class="btn" href="tutorial.html">返回教程页</a>
+    <a class="btn" href="index.html">返回主页</a>
+  </div>
 
   <footer>
     <p>生成于2025年7月18日|由BLVBTC提供|参考官方OKX指南</p>
