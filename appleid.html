@@ -60,56 +60,91 @@
       color: #777;
     }
 
-    /* 响应式设计：媒体查询 */
+    /* 新增导航按钮样式 */
+    .center {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .btn {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      text-decoration: none;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-block;
+      margin: 0 10px;
+      transition: background-color 0.3s;
+    }
+    .btn:hover {
+      background-color: #0056b3;
+    }
+
+    /* 响应式设计 */
     @media (max-width: 768px) {
       body {
-        padding: 15px 10px; /* 减少padding */
+        padding: 15px 10px;
       }
       header {
         padding: 20px 10px;
       }
       h1 {
-        font-size: 1.6em; /* 稍小标题 */
+        font-size: 1.6em;
       }
       h2 {
-        font-size: 1.2em; /* 调整子标题 */
+        font-size: 1.2em;
       }
       section {
         padding: 15px;
         margin: 15px 0;
       }
       ol, ul {
-        margin-left: 15px; /* 减少缩进 */
+        margin-left: 15px;
       }
       .note {
-        font-size: 0.9em; /* 缩小提示文字 */
+        font-size: 0.9em;
         padding: 8px;
       }
       footer {
         font-size: 0.8em;
         padding: 10px;
       }
+      .center {
+        margin-top: 15px;
+      }
+      .btn {
+        padding: 8px 15px;
+        font-size: 14px;
+        margin: 0 5px;
+      }
     }
 
     @media (max-width: 480px) {
       body {
-        padding: 10px 5px; /* 更小padding */
+        padding: 10px 5px;
       }
       h1 {
-        font-size: 1.4em; /* 进一步缩小标题 */
+        font-size: 1.4em;
       }
       h2 {
-        font-size: 1.1em; /* 更小子标题 */
+        font-size: 1.1em;
       }
       p, li {
-        font-size: 0.9em; /* 缩小正文和列表文字 */
+        font-size: 0.9em;
       }
       section {
         padding: 10px;
       }
       .note {
-        font-size: 0.85em; /* 更小提示 */
+        font-size: 0.85em;
         padding: 6px;
+      }
+      .btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        margin: 0 3px;
       }
     }
   </style>
@@ -191,6 +226,11 @@
       <li><strong>支付问题怎么办？</strong>：用iTunes礼品卡充值（兑换码可找本站购买），购买应用或服务。</li>
     </ul>
   </section>
+
+  <div class="center">
+    <a class="btn" href="tutorial.html">返回教程页</a>
+    <a class="btn" href="index.html">返回主页</a>
+  </div>
 
   <footer>
     <p>教程由BLVBTC提供 | 如需帮助，请联系qq17777846242@gmail.com</p>
