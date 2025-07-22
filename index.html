@@ -28,30 +28,98 @@
     }
 
     .btn {
-      background-color: #2196F3;
       color: white;
       padding: 14px 28px;
       text-decoration: none;
-      font-size: 20px; /* 文字稍微大一点，从18px增加到20px */
+      font-size: 20px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       width: 100%;
-      max-width: 250px; /* 按钮长度短一点，从300px减少到250px */
+      max-width: 250px;
       box-sizing: border-box;
       display: block;
       text-align: center;
       transition: background-color 0.3s;
     }
 
-    .btn:hover {
+    /* 各交易所风格按钮 */
+    .btn-okx {
+      background-color: #000;
+    }
+    .btn-okx:hover {
+      background-color: #333;
+    }
+
+    .btn-binance {
+      background-color: #F3BA2F;
+      color: #000;
+    }
+    .btn-binance:hover {
+      background-color: #d9a912;
+    }
+
+    .btn-bitget {
+      background-color: #18b8c8;
+    }
+    .btn-bitget:hover {
+      background-color: #0fa1ae;
+    }
+
+    .btn-bybit {
+      background-color: #fbbf1c;
+      color: #000;
+    }
+    .btn-bybit:hover {
+      background-color: #d9a912;
+    }
+
+    .btn-gate {
+      background-color: #f03a3e;
+    }
+    .btn-gate:hover {
+      background-color: #d52a2f;
+    }
+
+    .btn-biya {
+      background-color: #00b386;
+    }
+    .btn-biya:hover {
+      background-color: #009970;
+    }
+
+    .btn-airdrop {
+      background-color: #7e57c2;
+    }
+    .btn-airdrop:hover {
+      background-color: #5e35b1;
+    }
+
+    .btn-tutorial {
+      background-color: #2196F3;
+    }
+    .btn-tutorial:hover {
       background-color: #0b7dda;
     }
 
-    /* 新增广告位样式 - 轮播 */
+    .btn-faq {
+      background-color: #17a2b8;
+    }
+    .btn-faq:hover {
+      background-color: #138496;
+    }
+
+    .btn-ad {
+      background-color: #6c757d;
+    }
+    .btn-ad:hover {
+      background-color: #5a6268;
+    }
+
+    /* 广告位轮播样式 */
     .ad-slot {
       width: 100%;
-      max-width: 250px; /* 与按钮宽度一致，看起来协调 */
+      max-width: 250px;
       margin: 20px auto 0;
       border-radius: 6px;
       overflow: hidden;
@@ -64,7 +132,7 @@
 
     .ad-slider {
       width: 100%;
-      height: 150px; /* 固定高度，平铺拉伸 */
+      height: 150px;
       overflow: hidden;
       position: relative;
     }
@@ -81,36 +149,12 @@
     .ad-slide img {
       width: 100%;
       height: 100%;
-      object-fit: cover; /* 平铺拉伸，覆盖整个区域 */
+      object-fit: cover;
       display: block;
     }
 
-    .ad-slide a {
-      text-decoration: none;
-      color: #333;
-      font-size: 16px;
-    }
-
-    /* 显示当前滑块 */
     .ad-slide.active {
       display: block;
-    }
-
-    /* 自动播放样式 */
-    @keyframes slide {
-      0% { transform: translateX(0); }
-      20% { transform: translateX(0); }
-      25% { transform: translateX(-100%); }
-      45% { transform: translateX(-100%); }
-      50% { transform: translateX(-200%); }
-      70% { transform: translateX(-200%); }
-      75% { transform: translateX(-300%); }
-      95% { transform: translateX(-300%); }
-      100% { transform: translateX(0); }
-    }
-
-    .ad-slider {
-      animation: slide 15s infinite; /* 每张图片显示3秒，总时长15秒 */
     }
 
     /* 微信提示层样式 */
@@ -138,7 +182,7 @@
       line-height: 1.5;
     }
 
-    /* 响应式设计：媒体查询 */
+    /* 响应式设计 */
     @media (max-width: 768px) {
       body {
         padding: 30px 10px;
@@ -160,7 +204,7 @@
         padding: 8px;
       }
       .ad-slider {
-        height: 120px; /* 手机端高度调整 */
+        height: 120px;
       }
       .ad-slot a {
         font-size: 14px;
@@ -190,7 +234,7 @@
         padding: 5px;
       }
       .ad-slider {
-        height: 100px; /* 更小屏进一步调整 */
+        height: 100px;
       }
       .ad-slot a {
         font-size: 12px;
@@ -207,16 +251,17 @@
 <body>
   <h2>全球各大交易所注册链接如下</h2>
   <div class="button-container">
-    <a class="btn" href="https://www.ouxyi.link/ul/6CngT5?channelId=55394924">欧易OKX交易所</a>
-    <a class="btn" href="https://www.marketwebb.systems/zh-CN/activity/referral/offers/claim?ref=CPA_00FNE5J700">币安Binance交易所</a>
-    <a class="btn" href="https://www.niftah.cn/zh-CN/referral/register?clacCode=F1G9U5KN&from=%2Fzh-CN%2Fevents%2Freferral-all-program&source=events&utmSource=PremierInviter">Bitget交易所</a>
-    <a class="btn" href="https://www.bybitglobal.com/invite?ref=DRXRE5">Bybit交易所</a>
-    <a class="btn" href="https://www.gateweb.store/signup/BAVDVVpa?ref_type=103">芝麻Gate交易所</a>
-    <a class="btn" href="https://biyapay.com/re/34153828">BiyaPay交易所</a>
-    <a class="btn" href="https://t.me/+7M2YwE-mq08xNDJl">优质空投研究所</a>
-    <a class="btn" href="tutorial.html">教程</a> 
-    <a class="btn" href="ad.html">1美金广告位 </a>
-    <!-- 客户广告位：改为5个轮播页面 -->
+    <a class="btn btn-okx" href="https://www.ouxyi.link/ul/6CngT5?channelId=55394924">欧易OKX交易所</a>
+    <a class="btn btn-binance" href="https://www.marketwebb.systems/zh-CN/activity/referral/offers/claim?ref=CPA_00FNE5J700">币安Binance交易所</a>
+    <a class="btn btn-bitget" href="https://www.niftah.cn/zh-CN/referral/register?clacCode=F1G9U5KN&from=%2Fzh-CN%2Fevents%2Freferral-all-program&source=events&utmSource=PremierInviter">Bitget交易所</a>
+    <a class="btn btn-bybit" href="https://www.bybitglobal.com/invite?ref=DRXRE5">Bybit交易所</a>
+    <a class="btn btn-gate" href="https://www.gateweb.store/signup/BAVDVVpa?ref_type=103">芝麻Gate交易所</a>
+    <a class="btn btn-biya" href="https://biyapay.com/re/34153828">BiyaPay交易所</a>
+    <a class="btn btn-airdrop" href="https://t.me/+7M2YwE-mq08xNDJl">优质空投研究所</a>
+    <a class="btn btn-tutorial" href="tutorial.html">教程</a>
+    <a class="btn btn-faq" href="faq.html">疑难解答</a>
+    <a class="btn btn-ad" href="ad.html">1美金广告位</a>
+
     <div class="ad-slot">
       <div class="ad-slider">
         <div class="ad-slide active">
@@ -248,20 +293,35 @@
     </div>
   </div>
 
-  <!-- 微信内提示层：放在 body 末尾 -->
   <div id="weixin-tip">
     <img src="images/pop-up.png" alt="在浏览器中打开指引" />
     <p>请点击右上角“...”<br>选择“在浏览器中打开”</p>
   </div>
 
   <script>
-    // 检测是否在微信内置浏览器
     function isWeixin() {
       return /micromessenger/i.test(navigator.userAgent);
     }
     if (isWeixin()) {
       document.getElementById('weixin-tip').style.display = 'block';
     }
+
+    const slides = document.querySelectorAll('.ad-slide');
+    let currentSlide = 0;
+
+    function showSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === index);
+      });
+    }
+
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % slides.length;
+      showSlide(currentSlide);
+    }
+
+    setInterval(nextSlide, 3000);
+    showSlide(currentSlide);
   </script>
 </body>
 </html>
