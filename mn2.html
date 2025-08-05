@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aifeex - FEX AI</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "微软雅黑", sans-serif;
+      background: radial-gradient(ellipse at center, #1a0033, #000000);
+      color: white;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      background: #0a001a;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+      color: #00eaff;
+    }
+
+    .wallet {
+      background: linear-gradient(to right, #00eaff, #d95bff);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+
+    .menu-icon {
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .side-menu {
+      position: fixed;
+      top: 0;
+      right: -270px;
+      width: 270px;
+      height: 100%;
+      background-color: #111a2e;
+      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.6);
+      transition: right 0.3s ease;
+      z-index: 1000;
+      padding-top: 20px;
+    }
+
+    .side-menu.open {
+      right: 0;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      font-size: 20px;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .wallet-box {
+      text-align: center;
+      margin: 20px auto 10px;
+      padding: 10px;
+      background: #1d2b46;
+      border-radius: 10px;
+      width: 90%;
+      font-size: 13px;
+    }
+
+    .side-menu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .side-menu ul li {
+      padding: 15px 20px;
+      border-bottom: 1px solid #223355;
+      color: #fff;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .side-menu ul li:hover {
+      background-color: #1f2a40;
+    }
+
+    .main-content {
+      text-align: center;
+      margin: 40px 20px;
+    }
+
+    h1 {
+      font-size: 28px;
+    }
+
+    h1 span {
+      color: #00eaff;
+    }
+
+    p {
+      color: #ccc;
+    }
+
+    .identity-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      margin: 30px auto;
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+      text-align: left;
+    }
+
+    .identity-card h3 {
+      color: #d95bff;
+      font-size: 16px;
+    }
+
+    .identity-card .links {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    .identity-card a {
+      color: #00eaff;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">Aifeex</div>
+    <div style="display: flex; align-items: center;">
+      <div class="wallet">0x70...0af7</div>
+      <div class="menu-icon" onclick="toggleMenu()">☰</div>
+    </div>
+  </header>
+
+  <!-- Side Menu -->
+  <div class="side-menu" id="sideMenu">
+    <div class="close-btn" onclick="toggleMenu()">➤</div>
+    <div class="wallet-box">0x70ae11...7bd9e9e0af7</div>
+    <ul>
+      <li onclick="toggleMenu()">🏠 首页</li>
+      <li onclick="toggleMenu()">⚙️ 参与铸币</li>
+      <li onclick="toggleMenu()">💰 铸币产出</li>
+      <li onclick="toggleMenu()">👥 我的团队</li>
+      <li onclick="toggleMenu()">💼 我的资产</li>
+      <li onclick="toggleMenu()">🖼 NFT专区</li>
+      <li onclick="toggleMenu()">🔁 C2C专区</li>
+      <li onclick="toggleMenu()">💳 跨境支付</li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <h1>进入 <span>FEX AI</span> 世界</h1>
+    <p>探索各种投资和参与机会</p>
+
+    <div class="identity-card">
+      <h3>身份级别：V0</h3>
+      <p>我的社区流量：<strong>$0</strong></p>
+      <div class="links">
+        🔗 邀请链接1：<br>
+        <a href="https://www.aifeex.it.com">https://www.aifeex.it.com</a><br><br>
+        🔗 邀请链接2：<br>
+        <a href="https://www.aifeexes.com">https://www.aifeexes.com</a><br><br>
+        👤 邀请人：xxxxx
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById("sideMenu");
+      menu.classList.toggle("open");
+    }
+  </script>
+
+</body>
+</html>
