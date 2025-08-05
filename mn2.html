@@ -1,192 +1,251 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aifeex - FEX AI</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aifeex Clone</title>
   <style>
     body {
       margin: 0;
-      font-family: "微软雅黑", sans-serif;
-      background: radial-gradient(ellipse at center, #1a0033, #000000);
+      background: linear-gradient(to bottom, #12002f, #000000);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       color: white;
+      overflow-x: hidden;
     }
 
-    header {
+    .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px 20px;
-      background: #0a001a;
+      padding: 20px;
     }
 
     .logo {
-      font-size: 20px;
+      font-size: 24px;
       font-weight: bold;
-      color: #00eaff;
+      color: #00f0ff;
     }
 
-    .wallet {
-      background: linear-gradient(to right, #00eaff, #d95bff);
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+    }
+
+    .link-wallet {
+      background: linear-gradient(to right, #00f0ff, #ff00e0);
+      border: none;
+      color: white;
+      padding: 10px 20px;
       border-radius: 20px;
-      padding: 5px 12px;
-      font-size: 14px;
-      margin-right: 10px;
+      font-size: 16px;
+      cursor: pointer;
     }
 
     .menu-icon {
-      font-size: 24px;
+      width: 30px;
+      height: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       cursor: pointer;
     }
 
-    .side-menu {
-      position: fixed;
-      top: 0;
-      right: -270px;
-      width: 270px;
-      height: 100%;
-      background-color: #111a2e;
-      box-shadow: -2px 0 8px rgba(0, 0, 0, 0.6);
-      transition: right 0.3s ease;
-      z-index: 1000;
-      padding-top: 20px;
+    .menu-icon span {
+      height: 4px;
+      background: white;
+      border-radius: 2px;
     }
 
-    .side-menu.open {
+    .sidebar {
+      position: fixed;
+      top: 0;
+      right: -260px; /* 默认隐藏在右侧 */
+      width: 260px;
+      height: 100%;
+      background-color: #111c3d;
+      box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+      transition: right 0.3s ease-in-out;
+      z-index: 999;
+      padding-top: 60px;
+    }
+
+    .sidebar.active {
       right: 0;
     }
 
-    .close-btn {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      font-size: 20px;
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      padding: 14px 20px;
       color: #fff;
-      cursor: pointer;
+      font-size: 16px;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    .wallet-box {
+    .sidebar a:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .sidebar a span {
+      margin-right: 10px;
+      font-size: 18px;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 998;
+    }
+
+    .center-content {
       text-align: center;
-      margin: 20px auto 10px;
-      padding: 10px;
-      background: #1d2b46;
-      border-radius: 10px;
-      width: 90%;
-      font-size: 13px;
+      margin-top: 100px;
     }
 
-    .side-menu ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
+    .center-content h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
     }
 
-    .side-menu ul li {
-      padding: 15px 20px;
-      border-bottom: 1px solid #223355;
-      color: #fff;
-      font-size: 15px;
-      cursor: pointer;
+    .center-content h1 span {
+      color: #00f0ff;
     }
 
-    .side-menu ul li:hover {
-      background-color: #1f2a40;
-    }
-
-    .main-content {
-      text-align: center;
-      margin: 40px 20px;
-    }
-
-    h1 {
-      font-size: 28px;
-    }
-
-    h1 span {
-      color: #00eaff;
-    }
-
-    p {
+    .center-content p {
       color: #ccc;
     }
 
-    .identity-card {
+    .card {
       background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      margin: 30px auto;
-      padding: 20px;
-      width: 90%;
-      max-width: 400px;
+      border: 1px solid #55008b;
+      border-radius: 20px;
+      margin: 50px auto;
+      max-width: 900px;
+      padding: 30px;
+      box-shadow: 0 0 20px rgba(255, 0, 255, 0.1);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    .identity-level {
+      background: #52008c;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+
+    .invitation {
       text-align: left;
+      margin-top: 20px;
     }
 
-    .identity-card h3 {
-      color: #d95bff;
-      font-size: 16px;
+    .invitation a {
+      display: block;
+      margin-bottom: 10px;
+      color: #00f0ff;
+      text-decoration: none;
     }
 
-    .identity-card .links {
+    .inviter {
       margin-top: 10px;
       font-size: 14px;
+      color: #aaa;
     }
 
-    .identity-card a {
-      color: #00eaff;
-      word-break: break-all;
+    .wallet-address {
+      text-align: center;
+      font-size: 14px;
+      color: #00f0ff;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="logo">Aifeex</div>
-    <div style="display: flex; align-items: center;">
-      <div class="wallet">0x70...0af7</div>
-      <div class="menu-icon" onclick="toggleMenu()">☰</div>
-    </div>
-  </header>
-
-  <!-- Side Menu -->
-  <div class="side-menu" id="sideMenu">
-    <div class="close-btn" onclick="toggleMenu()">➤</div>
-    <div class="wallet-box">0x70ae11...7bd9e9e0af7</div>
-    <ul>
-      <li onclick="toggleMenu()">🏠 首页</li>
-      <li onclick="toggleMenu()">⚙️ 参与铸币</li>
-      <li onclick="toggleMenu()">💰 铸币产出</li>
-      <li onclick="toggleMenu()">👥 我的团队</li>
-      <li onclick="toggleMenu()">💼 我的资产</li>
-      <li onclick="toggleMenu()">🖼 NFT专区</li>
-      <li onclick="toggleMenu()">🔁 C2C专区</li>
-      <li onclick="toggleMenu()">💳 跨境支付</li>
-    </ul>
+  <!-- 右侧菜单 -->
+  <div class="sidebar" id="sidebar">
+    <a href="#"><span>🏠</span> 首页</a>
+    <a href="#"><span>⚙️</span> 参与铸币</a>
+    <a href="#"><span>💰</span> 铸币产出</a>
+    <a href="#"><span>👥</span> 我的团队</a>
+    <a href="#"><span>💼</span> 我的资产</a>
+    <a href="#"><span>🖼️</span> NFT专区</a>
+    <a href="#"><span>🔄</span> C2C专区</a>
+    <a href="#"><span>💳</span> 跨境支付</a>
   </div>
 
-  <!-- Main Content -->
-  <div class="main-content">
-    <h1>进入 <span>FEX AI</span> 世界</h1>
-    <p>探索各种投资和参与机会</p>
+  <!-- 遮罩层 -->
+  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <div class="identity-card">
-      <h3>身份级别：V0</h3>
-      <p>我的社区流量：<strong>$0</strong></p>
-      <div class="links">
-        🔗 邀请链接1：<br>
-        <a href="https://www.aifeex.it.com">https://www.aifeex.it.com</a><br><br>
-        🔗 邀请链接2：<br>
-        <a href="https://www.aifeexes.com">https://www.aifeexes.com</a><br><br>
-        👤 邀请人：xxxxx
+  <!-- 顶部导航 -->
+  <div class="header">
+    <div class="logo">🪐 Aifeex</div>
+    <div class="actions">
+      <button class="link-wallet" onclick="connectWallet()">Link Wallet</button>
+      <div class="menu-icon" onclick="toggleSidebar()">
+        <span></span>
+        <span></span>
+        <span></span>
       </div>
     </div>
   </div>
 
-  <!-- JavaScript -->
+  <!-- 页面主体内容 -->
+  <div class="center-content">
+    <h1>Enter <span>FEX AI</span> World</h1>
+    <p>Explore various investment and participation opportunities</p>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="identity-level">Identity Level: <strong>V0</strong></div>
+      <div>My community flows: <strong>$0</strong></div>
+    </div>
+
+    <div class="invitation">
+      <a href="#">🔗 Invitation Link 1: https://www.aifeex.it.com/...</a>
+      <a href="#">🔗 Invitation Link 2: https://www.aifeexes.com/...</a>
+      <div class="inviter">Inviter: xxxxx</div>
+    </div>
+  </div>
+
+  <div class="wallet-address" id="walletAddress"></div>
+
   <script>
-    function toggleMenu() {
-      const menu = document.getElementById("sideMenu");
-      menu.classList.toggle("open");
+    async function connectWallet() {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          document.getElementById("walletAddress").innerText = "✅ Connected: " + accounts[0];
+        } catch (err) {
+          alert("用户拒绝连接钱包。");
+        }
+      } else {
+        alert("未检测到 MetaMask，请先安装。");
+      }
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebar");
+      const overlay = document.getElementById("overlay");
+      const isActive = sidebar.classList.contains("active");
+      sidebar.classList.toggle("active", !isActive);
+      overlay.style.display = !isActive ? "block" : "none";
     }
   </script>
-
 </body>
 </html>
