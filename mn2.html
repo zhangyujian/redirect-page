@@ -14,7 +14,7 @@
     .safe{padding:16px; padding-bottom:calc(16px + env(safe-area-inset-bottom));}
     .hero{position:relative;height:220px;border-radius:0 0 24px 24px;overflow:hidden;background:#ddd}
     .hero img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.05)}
-    .bubble{position:absolute;left:12px;top:12px;background:#fff;color:#111;border-radius:999px;padding:10px 14px;box-shadow:0 8px 20px rgba(0,0,0,.08);display:flex;align-items:center;gap:10px}
+    .bubble{position:absolute;left:12px;top:12px;background:#fff;color:#111;border-radius:999px;padding:10px 14px;box-shadow:0 8px 20px rgba(0,0,0,.08);display:flex;align-items:center;gap:10px;text-decoration:none}
     .avatar{width:32px;height:32px;border-radius:50%;overflow:hidden;flex:none}
     .avatar img{width:100%;height:100%;object-fit:cover}
     .bubble b{font-size:14px}
@@ -64,10 +64,10 @@
 <body>
   <div class="hero">
     <img src="https://picsum.photos/id/1018/1200/600" alt="hero" />
-    <div class="bubble">
+    <a href="snssdk1128://user/profile/yourid" class="bubble">
       <span class="avatar"><img src="https://picsum.photos/seed/loft/80/80" alt="avatar" /></span>
       <b>关注抖音，领取福利！</b>
-    </div>
+    </a>
   </div>
 
   <div class="safe">
@@ -184,7 +184,6 @@
         const key = a.getAttribute('data-link');
         const url = LINKS[key];
         if(!url){ e.preventDefault(); toast('链接未配置'); return; }
-        // 微信内可由 JSSDK/客服消息拉起；这里直接跳转（外部浏览器有效）
         a.setAttribute('href', url);
       });
     });
