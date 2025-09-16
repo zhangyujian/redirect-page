@@ -1,250 +1,223 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Aifeex Clone</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no,email=no,address=no" />
+  <title>发视频/种草 & 优惠团购</title>
   <style>
-    body {
-      margin: 0;
-      background: linear-gradient(to bottom, #12002f, #000000);
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      color: white;
-      overflow-x: hidden;
+    :root{
+      --bg:#f6f7fb; --card:#fff; --text:#121212; --muted:#6b7280; --brand:#ff4d5a; --accent:#ff8a00; --radius:16px;
     }
+    *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+    .safe{padding:16px; padding-bottom:calc(16px + env(safe-area-inset-bottom));}
+    .hero{position:relative;height:220px;border-radius:0 0 24px 24px;overflow:hidden;background:#ddd}
+    .hero img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.05)}
+    .bubble{position:absolute;left:12px;top:12px;background:#fff;color:#111;border-radius:999px;padding:10px 14px;box-shadow:0 8px 20px rgba(0,0,0,.08);display:flex;align-items:center;gap:10px}
+    .avatar{width:32px;height:32px;border-radius:50%;overflow:hidden;flex:none}
+    .avatar img{width:100%;height:100%;object-fit:cover}
+    .bubble b{font-size:14px}
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px;
-    }
+    .section{margin-top:16px}
+    .section .cap{display:flex;align-items:center;gap:8px;margin:6px 6px 10px;color:#111;font-weight:700}
+    .cap .bar{width:4px;height:18px;background:linear-gradient(180deg,var(--accent),#ffbb55);border-radius:2px}
 
-    .logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: #00f0ff;
-    }
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .grid.triple{grid-template-columns:repeat(3,1fr)}
+    .card{background:var(--card);border-radius:var(--radius);box-shadow:0 10px 30px rgba(0,0,0,.06);padding:18px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;justify-content:center;min-height:96px;transition:transform .12s ease}
+    .card:active{transform:scale(.98)}
+    .card .row{display:flex;align-items:center;gap:10px}
+    .icon{width:28px;height:28px;border-radius:8px;display:grid;place-items:center}
+    .icon.douyin{background:#111}
+    .icon.red{background:#f43f5e}
+    .icon.ks{background:#ff6a00}
+    .icon.dot{background:#ff9800}
+    .icon svg{width:18px;height:18px;fill:#fff}
+    .label{font-size:16px;font-weight:600}
+    .sub{font-size:12px;color:var(--muted)}
 
-    .actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      position: relative;
-    }
+    .panel{background:var(--card);border-radius:24px;padding:14px;box-shadow:0 12px 30px rgba(0,0,0,.06)}
+    .panel h3{margin:0 0 10px 0;text-align:center;font-size:18px;letter-spacing:.2em;color:#ff7a00;position:relative}
+    .panel h3:before,.panel h3:after{content:"";position:absolute;top:50%;width:18%;height:1px;background:#ffd7a3}
+    .panel h3:before{left:0}
+    .panel h3:after{right:0}
 
-    .link-wallet {
-      background: linear-gradient(to right, #00f0ff, #ff00e0);
-      border: none;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
+    .list{display:flex;flex-direction:column;gap:12px}
+    .deal{display:flex;gap:12px;background:#fff;border-radius:18px;padding:10px;align-items:center}
+    .deal img{width:96px;height:72px;border-radius:12px;object-fit:cover}
+    .deal .meta{flex:1}
+    .deal .title{font-weight:600}
+    .deal .tags{font-size:12px;color:#ff3b30;border:1px solid #ffe0dd;padding:2px 6px;border-radius:999px;display:inline-block;margin-top:4px}
+    .deal .right{text-align:right;min-width:72px}
+    .deal .right .sold{font-size:12px;color:var(--muted)}
+    .deal .right .btn{margin-top:6px;border:none;background:linear-gradient(180deg,#ff8a00,#ff5b00);color:#fff;padding:8px 10px;border-radius:999px;font-weight:700}
 
-    .menu-icon {
-      width: 30px;
-      height: 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      cursor: pointer;
-    }
+    .stickyBar{position:sticky;bottom:0;left:0;right:0;padding:12px 0;margin-top:18px;background:linear-gradient(180deg,transparent,rgba(246,247,251,.9) 30%, rgba(246,247,251,1));backdrop-filter:saturate(1.2) blur(6px)}
+    .cta{width:100%;border:none;background:#ff4d5a;color:#fff;padding:14px;border-radius:14px;font-size:16px;font-weight:700}
 
-    .menu-icon span {
-      height: 4px;
-      background: white;
-      border-radius: 2px;
-    }
-
-    .sidebar {
-      position: fixed;
-      top: 0;
-      right: -260px; /* 默认隐藏在右侧 */
-      width: 260px;
-      height: 100%;
-      background-color: #111c3d;
-      box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
-      transition: right 0.3s ease-in-out;
-      z-index: 999;
-      padding-top: 60px;
-    }
-
-    .sidebar.active {
-      right: 0;
-    }
-
-    .sidebar a {
-      display: flex;
-      align-items: center;
-      padding: 14px 20px;
-      color: #fff;
-      font-size: 16px;
-      text-decoration: none;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .sidebar a:hover {
-      background-color: rgba(255, 255, 255, 0.08);
-    }
-
-    .sidebar a span {
-      margin-right: 10px;
-      font-size: 18px;
-    }
-
-    .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
-      z-index: 998;
-    }
-
-    .center-content {
-      text-align: center;
-      margin-top: 100px;
-    }
-
-    .center-content h1 {
-      font-size: 36px;
-      margin-bottom: 10px;
-    }
-
-    .center-content h1 span {
-      color: #00f0ff;
-    }
-
-    .center-content p {
-      color: #ccc;
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid #55008b;
-      border-radius: 20px;
-      margin: 50px auto;
-      max-width: 900px;
-      padding: 30px;
-      box-shadow: 0 0 20px rgba(255, 0, 255, 0.1);
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 18px;
-      margin-bottom: 20px;
-    }
-
-    .identity-level {
-      background: #52008c;
-      padding: 5px 10px;
-      border-radius: 8px;
-      font-weight: bold;
-    }
-
-    .invitation {
-      text-align: left;
-      margin-top: 20px;
-    }
-
-    .invitation a {
-      display: block;
-      margin-bottom: 10px;
-      color: #00f0ff;
-      text-decoration: none;
-    }
-
-    .inviter {
-      margin-top: 10px;
-      font-size: 14px;
-      color: #aaa;
-    }
-
-    .wallet-address {
-      text-align: center;
-      font-size: 14px;
-      color: #00f0ff;
-      margin-top: 10px;
-    }
+    /* Toast */
+    .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(0,0,0,.78);color:#fff;padding:10px 14px;border-radius:12px;opacity:0;pointer-events:none;transition:opacity .25s}
+    .toast.show{opacity:1}
   </style>
 </head>
 <body>
-
-  <!-- 右侧菜单 -->
-  <div class="sidebar" id="sidebar">
-    <a href="#"><span>🏠</span> 首页</a>
-    <a href="#"><span>⚙️</span> 参与铸币</a>
-    <a href="#"><span>💰</span> 铸币产出</a>
-    <a href="#"><span>👥</span> 我的团队</a>
-    <a href="#"><span>💼</span> 我的资产</a>
-    <a href="#"><span>🖼️</span> NFT专区</a>
-    <a href="#"><span>🔄</span> C2C专区</a>
-    <a href="#"><span>💳</span> 跨境支付</a>
+  <div class="hero">
+    <img src="https://picsum.photos/id/1018/1200/600" alt="hero" />
+    <div class="bubble">
+      <span class="avatar"><img src="https://picsum.photos/seed/loft/80/80" alt="avatar" /></span>
+      <b>关注抖音，领取福利！</b>
+    </div>
   </div>
 
-  <!-- 遮罩层 -->
-  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+  <div class="safe">
 
-  <!-- 顶部导航 -->
-  <div class="header">
-    <div class="logo">🪐 Aifeex</div>
-    <div class="actions">
-      <button class="link-wallet" onclick="connectWallet()">Link Wallet</button>
-      <div class="menu-icon" onclick="toggleSidebar()">
-        <span></span>
-        <span></span>
-        <span></span>
+    <!-- 发视频/种草 -->
+    <div class="section">
+      <div class="cap"><span class="bar"></span><span>发视频/种草</span></div>
+      <div class="grid">
+        <button class="card" data-action="publish-douyin">
+          <div class="row">
+            <span class="icon douyin" aria-hidden>
+              <svg viewBox="0 0 24 24"><path d="M16 3v3.5c1 .8 2.2 1.3 3.5 1.3V11a7.5 7.5 0 0 1-3.5-1V17a6 6 0 1 1-6-6c.3 0 .7 0 1 .1V14a2.5 2.5 0 1 0 2.5 2.5V3H16z"/></svg>
+            </span>
+            <div>
+              <div class="label">发抖音</div>
+              <div class="sub">一键生成并发布</div>
+            </div>
+          </div>
+        </button>
+        <button class="card" data-action="publish-xhs">
+          <div class="row">
+            <span class="icon red" aria-hidden>
+              <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/></svg>
+            </span>
+            <div>
+              <div class="label">发小红书</div>
+              <div class="sub">自动生成笔记内容</div>
+            </div>
+          </div>
+        </button>
       </div>
     </div>
-  </div>
 
-  <!-- 页面主体内容 -->
-  <div class="center-content">
-    <h1>Enter <span>FEX AI</span> World</h1>
-    <p>Explore various investment and participation opportunities</p>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <div class="identity-level">Identity Level: <strong>V0</strong></div>
-      <div>My community flows: <strong>$0</strong></div>
+    <!-- 视频赞/关注 -->
+    <div class="section">
+      <div class="cap"><span class="bar"></span><span>视频赞/关注</span></div>
+      <div class="grid triple">
+        <a class="card" href="#" data-link="ks-follow">
+          <div class="row">
+            <span class="icon ks"></span>
+            <div class="label">关注快手</div>
+          </div>
+        </a>
+        <a class="card" href="#" data-link="dy-follow">
+          <div class="row">
+            <span class="icon douyin"></span>
+            <div class="label">关注抖音</div>
+          </div>
+        </a>
+        <a class="card" href="#" data-link="dy-like">
+          <div class="row">
+            <span class="icon dot"></span>
+            <div class="label">视频点赞</div>
+          </div>
+        </a>
+      </div>
     </div>
 
-    <div class="invitation">
-      <a href="#">🔗 Invitation Link 1: https://www.aifeex.it.com/...</a>
-      <a href="#">🔗 Invitation Link 2: https://www.aifeexes.com/...</a>
-      <div class="inviter">Inviter: xxxxx</div>
+    <!-- 优惠团购 -->
+    <div class="section panel">
+      <h3>优惠团购</h3>
+      <div class="list" id="dealList">
+        <!-- 动态注入示例项 -->
+      </div>
+    </div>
+
+    <div class="stickyBar">
+      <button class="cta" id="quickXhs">一键生成并发布到小红书</button>
     </div>
   </div>
 
-  <div class="wallet-address" id="walletAddress"></div>
+  <div class="toast" id="toast"></div>
 
   <script>
-    async function connectWallet() {
-      if (window.ethereum) {
-        try {
-          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-          document.getElementById("walletAddress").innerText = "✅ Connected: " + accounts[0];
-        } catch (err) {
-          alert("用户拒绝连接钱包。");
-        }
-      } else {
-        alert("未检测到 MetaMask，请先安装。");
-      }
+    // ===== 可配置：后端 API 与回跳链接 =====
+    const API = {
+      publishXHS: "/api/xhs/publish", // 你的 Node 服务反代路径
+      publishDY: "/api/dy/publish"
+    };
+    const LINKS = {
+      "ks-follow": "https://v.kuaishou.com/your-follow",
+      "dy-follow": "snssdk1128://user/profile/yourid", // 抖音 App 跳转例（示意）
+      "dy-like":   "https://www.douyin.com/video/xxx"
+    };
+
+    // ===== 示例团购数据（可改为后端拉取） =====
+    const deals = [
+      {title:"【抖音团购】海景LOFT 一晚含早", tag:"抖音商品", img:"https://picsum.photos/id/106/240/160", sold:658, url:"https://douyin.com/goods/abc"},
+      {title:"两晚连住特惠 · 可看日出", tag:"今日特价", img:"https://picsum.photos/id/1025/240/160", sold:342, url:"https://douyin.com/goods/def"},
+      {title:"亲子房加床包 · 免费停车", tag:"人气推荐", img:"https://picsum.photos/id/1040/240/160", sold:129, url:"https://douyin.com/goods/ghi"}
+    ];
+
+    const list = document.getElementById('dealList');
+    deals.forEach(d=>{
+      const el = document.createElement('a');
+      el.className = 'deal';
+      el.href = d.url;
+      el.innerHTML = `
+        <img src="${d.img}" alt="deal"/>
+        <div class="meta">
+          <div class="title">${d.title}</div>
+          <span class="tags">${d.tag}</span>
+        </div>
+        <div class="right">
+          <div class="sold">已售${d.sold}</div>
+          <button class="btn" type="button">去团购</button>
+        </div>`;
+      list.appendChild(el);
+    });
+
+    // ===== 事件绑定 =====
+    document.querySelectorAll('[data-link]').forEach(a=>{
+      a.addEventListener('click', e=>{
+        const key = a.getAttribute('data-link');
+        const url = LINKS[key];
+        if(!url){ e.preventDefault(); toast('链接未配置'); return; }
+        // 微信内可由 JSSDK/客服消息拉起；这里直接跳转（外部浏览器有效）
+        a.setAttribute('href', url);
+      });
+    });
+
+    // 触发发布：小红书
+    async function publishXHS(payload){
+      try{
+        const r = await fetch(API.publishXHS, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+        const j = await r.json();
+        if(!r.ok) throw new Error(j.message||'发布失败');
+        toast('已下发到手机执行');
+      }catch(err){ toast(err.message); }
     }
 
-    function toggleSidebar() {
-      const sidebar = document.getElementById("sidebar");
-      const overlay = document.getElementById("overlay");
-      const isActive = sidebar.classList.contains("active");
-      sidebar.classList.toggle("active", !isActive);
-      overlay.style.display = !isActive ? "block" : "none";
+    // Demo：点击两处入口
+    document.getElementById('quickXhs').addEventListener('click', () => doGenAndPublish());
+    document.querySelector('[data-action="publish-xhs"]').addEventListener('click', () => doGenAndPublish());
+
+    function doGenAndPublish(){
+      const payload = {
+        topic: "汕头海湾LOFT生活",
+        place: "龙光世纪商务中心",
+        style: "轻松口吻+打卡标签",
+        images: ["loft_01.jpg","loft_02.jpg"],
+        tags: ["LOFT公寓","网红打卡","汕头旅行","海上日出","内海湾城市"]
+      };
+      publishXHS(payload);
+    }
+
+    function toast(msg){
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      clearTimeout(t._timer); t._timer = setTimeout(()=>t.classList.remove('show'), 1800);
     }
   </script>
 </body>
