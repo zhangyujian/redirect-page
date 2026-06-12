@@ -148,6 +148,10 @@
   }
 
   elements.form.addEventListener("input", generateBarcode);
+  elements.form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    generateBarcode();
+  });
   elements.format.addEventListener("change", () => {
     const [sample, hint] = formatInfo[elements.format.value];
     elements.value.value = sample;
