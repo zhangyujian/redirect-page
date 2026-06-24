@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="在线打字练习，实时显示速度、准确率、用时和错误数。">
+  <title>打字练习</title>
+  <style>
+    :root {
+      --primary: #2196f3;
+      --primary-dark: #0b7dda;
+      --success: #1b8f5a;
+      --danger: #d92d20;
+      --ink: #172033;
+      --muted: #667085;
+      --line: #dce2eb;
+      --surface: #fff;
+      --background: #f2f4f8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--background);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+    }
+
+    button, textarea { font: inherit; }
+
+    .page {
+      width: min(1000px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 36px 0 46px;
+    }
+
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .back-link {
+      color: var(--primary);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .back-link:hover { color: var(--primary-dark); }
+
+    .hero {
+      margin-bottom: 22px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(30px, 5vw, 44px);
+      letter-spacing: 0;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .practice {
+      display: grid;
+      grid-template-columns: 1fr 270px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .workspace,
+    .stats {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 10px 28px rgba(28, 48, 82, 0.08);
+    }
+
+    .workspace { padding: 24px; }
+    .stats { padding: 18px; }
+
+    .workspace {
+      position: relative;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .mode-button,
+    .action-button,
+    .image-button {
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid #add4f7;
+      border-radius: 6px;
+      color: var(--primary-dark);
+      background: #fff;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .mode-button.active,
+    .action-button.primary {
+      color: #fff;
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .mode-button:hover,
+    .action-button:hover,
+    .image-button:hover {
+      border-color: var(--primary-dark);
+    }
+
+    .letter-trainer {
+      display: none;
+      margin-bottom: 16px;
+      padding: 18px 14px 14px;
+      background: linear-gradient(180deg, #eef6ff 0%, #f7f2f7 100%);
+      border: 1px solid #d6e1ec;
+      border-radius: 8px;
+    }
+
+    .workspace.home-mode .letter-trainer {
+      display: block;
+    }
+
+    .home-practice-row {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin: -6px 0 14px;
+      padding: 10px 12px;
+      background: #f8fbff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .workspace.home-mode .home-practice-row {
+      display: flex;
+    }
+
+    .home-practice-row label {
+      color: #475467;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .home-practice-select {
+      min-height: 40px;
+      flex: 0 1 220px;
+      padding: 0 12px;
+      color: var(--ink);
+      background: #fff;
+      border: 1px solid #cfd7e5;
+      border-radius: 6px;
+      outline: none;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .home-practice-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.12);
+    }
+
+    .letter-window {
+      display: flex;
+      justify-content: center;
+      gap: clamp(8px, 2.4vw, 24px);
+      min-height: 94px;
+      padding: 4px 0 18px;
+    }
+
+    .letter-card {
+      width: clamp(48px, 8vw, 86px);
+      height: clamp(56px, 8vw, 86px);
+      display: grid;
+      place-items: center;
+      color: #666;
+      background: rgba(255, 255, 255, .92);
+      border: 1px solid #ccd3df;
+      border-radius: 7px;
+      font-size: clamp(26px, 4vw, 38px);
+      box-shadow: 0 8px 20px rgba(28, 48, 82, .08);
+    }
+
+    .letter-card.active {
+      position: relative;
+      color: #172033;
+      border-color: #9fc9f8;
+    }
+
+    .letter-card.active::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -12px;
+      height: 3px;
+      background: var(--primary);
+      border-radius: 99px;
+    }
+
+    .letter-card.space-card {
+      font-size: clamp(15px, 2vw, 20px);
+    }
+
+    .letter-ad {
+      display: grid;
+      min-height: 72px;
+      place-items: center;
+      margin: 14px auto 0;
+      color: #98a2b3;
+      background: rgba(255, 255, 255, .84);
+      border: 1px solid #edf1f7;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .error-feedback {
+      min-height: 34px;
+      display: grid;
+      place-items: center;
+      margin: 12px auto 0;
+      padding: 7px 12px;
+      color: #b42318;
+      background: #fff5f5;
+      border: 1px solid #ffd1d1;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 800;
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: opacity .12s ease, transform .12s ease;
+    }
+
+    .error-feedback.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .letter-trainer.error-flash {
+      animation: trainerErrorFlash .22s ease;
+    }
+
+    @keyframes trainerErrorFlash {
+      0%, 100% { border-color: #d6e1ec; }
+      50% { border-color: var(--danger); }
+    }
+
+    .guide-card {
+      margin-bottom: 16px;
+      padding: 14px;
+      background: #fbfcfe;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .guide-card.is-hidden { display: none; }
+
+    .guide-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .guide-header h2 {
+      margin: 0 0 4px;
+      font-size: 18px;
+    }
+
+    .guide-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .image-button {
+      flex: 0 0 auto;
+      color: #475467;
+      background: #fff;
+    }
+
+    .guide-image {
+      width: 100%;
+      display: block;
+      background: #eef4fb;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .guide-card.image-collapsed .guide-image {
+      display: none;
+    }
+
+    .hand-demo {
+      margin-top: 14px;
+      padding: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .demo-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .demo-title {
+      display: grid;
+      gap: 4px;
+      text-align: left;
+    }
+
+    .demo-title strong {
+      font-size: 17px;
+    }
+
+    .demo-title span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .visual-keyboard {
+      position: relative;
+      min-height: 380px;
+      overflow: hidden;
+      background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+      border: 1px solid #d6e1ec;
+      border-radius: 8px;
+    }
+
+    .demo-keys {
+      position: absolute;
+      top: 28px;
+      left: 5%;
+      right: 5%;
+      z-index: 2;
+    }
+
+    .key-row {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 7px;
+    }
+
+    .key-row-home { transform: translateX(-18px); }
+    .key-row-bottom { transform: translateX(28px); }
+
+    .demo-key {
+      width: clamp(34px, 6vw, 62px);
+      height: clamp(36px, 5vw, 54px);
+      display: grid;
+      place-items: center;
+      color: #4b5565;
+      background: #fff;
+      border: 1px solid #cfd7e5;
+      border-radius: 8px;
+      font-size: clamp(16px, 2.4vw, 24px);
+      font-weight: 700;
+      box-shadow: 0 2px 0 #d8e0eb;
+      transition: transform .14s, background-color .14s, border-color .14s, box-shadow .14s;
+    }
+
+    .demo-key.home-left {
+      color: #145ea8;
+      background: #e7f1ff;
+      border-color: #4a90e2;
+    }
+
+    .demo-key.home-right {
+      color: #11613c;
+      background: #e9f8ef;
+      border-color: #20a464;
+    }
+
+    .demo-key.next-key {
+      background: #fff6d7;
+      border-color: #f0a000;
+      box-shadow: 0 0 0 4px rgba(240, 160, 0, 0.18);
+      animation: keyGuidePulse 1.2s ease-in-out infinite;
+    }
+
+    .demo-key.pressed {
+      transform: translateY(3px);
+      box-shadow: 0 0 0 #d8e0eb;
+      animation: none;
+    }
+
+    .demo-key.need-correction {
+      background: #ffebee;
+      border-color: var(--danger);
+      box-shadow: 0 0 0 4px rgba(217, 45, 32, .16);
+    }
+
+    .key-space {
+      width: min(480px, 52vw);
+      color: #667085;
+      font-size: 16px;
+    }
+
+    .hands-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+    }
+
+    .palm {
+      position: absolute;
+      bottom: 22px;
+      width: 160px;
+      height: 74px;
+      opacity: .42;
+      background: #d9e4f1;
+      border: 3px solid #8a97a8;
+      border-radius: 70px 70px 34px 34px;
+    }
+
+    .palm.left {
+      left: 14%;
+      transform: rotate(-10deg);
+    }
+
+    .palm.right {
+      right: 14%;
+      transform: rotate(10deg);
+    }
+
+    .finger {
+      position: absolute;
+      width: 28px;
+      height: 76px;
+      display: grid;
+      place-items: start center;
+      padding-top: 7px;
+      color: #fff;
+      border: 2px solid rgba(255, 255, 255, .74);
+      border-radius: 16px 16px 20px 20px;
+      font-size: 12px;
+      font-weight: 800;
+      opacity: .88;
+      transform: translate(-50%, -50%);
+      transform-origin: 50% 82%;
+      transition: left .2s ease, top .2s ease, background-color .15s ease, box-shadow .15s ease;
+      box-shadow: 0 7px 16px rgba(28, 48, 82, .18);
+    }
+
+    .finger::before {
+      content: "";
+      position: absolute;
+      top: -9px;
+      left: 50%;
+      width: 3px;
+      height: 9px;
+      background: #4b5565;
+      border-radius: 3px;
+      transform: translateX(-50%);
+      opacity: .55;
+    }
+
+    .finger.left-hand { background: #4a90e2; }
+    .finger.right-hand { background: #20a464; }
+
+    .finger.left-hand::before { background: #4a90e2; }
+    .finger.right-hand::before { background: #20a464; }
+
+    .finger.active {
+      opacity: 1;
+      box-shadow: 0 0 0 5px rgba(240, 160, 0, .25), 0 10px 20px rgba(28, 48, 82, .22);
+      animation: fingerGuidePulse 1.2s ease-in-out infinite;
+    }
+
+    .finger.pressing {
+      animation: fingerPress .24s ease;
+    }
+
+    @keyframes keyGuidePulse {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(240, 160, 0, 0.18); }
+      50% { box-shadow: 0 0 0 8px rgba(240, 160, 0, 0.08); }
+    }
+
+    @keyframes fingerGuidePulse {
+      0%, 100% { box-shadow: 0 0 0 5px rgba(240, 160, 0, .25), 0 10px 20px rgba(28, 48, 82, .22); }
+      50% { box-shadow: 0 0 0 9px rgba(240, 160, 0, .12), 0 10px 20px rgba(28, 48, 82, .22); }
+    }
+
+    @keyframes fingerPress {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -54%) scale(.94); }
+    }
+
+    .target {
+      min-height: 150px;
+      padding: 18px;
+      margin-bottom: 16px;
+      background: #fbfcfe;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 22px;
+      line-height: 1.8;
+      text-align: left;
+      word-break: break-word;
+    }
+
+    .target span {
+      border-bottom: 2px solid transparent;
+      padding: 0 1px;
+    }
+
+    .target .correct {
+      color: var(--success);
+      background: #eaf8f0;
+    }
+
+    .target .wrong {
+      color: var(--danger);
+      background: #ffebee;
+    }
+
+    .target .current {
+      border-color: var(--primary);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      resize: vertical;
+      padding: 14px;
+      border: 1px solid #cfd7e5;
+      border-radius: 8px;
+      outline: none;
+      font-size: 20px;
+      line-height: 1.7;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.12);
+    }
+
+    .workspace.home-mode .target,
+    .workspace.home-mode .typing-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      min-height: 1px;
+      padding: 0;
+      margin: 0;
+      opacity: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .hint {
+      min-height: 20px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stats h2 {
+      margin: 0 0 14px;
+      font-size: 20px;
+    }
+
+    .stat-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .stat {
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .stat b {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stat span {
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .complete {
+      display: none;
+      margin-top: 14px;
+      padding: 12px;
+      color: #11613c;
+      background: #eaf8f0;
+      border: 1px solid #bfe8cf;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    .complete.show { display: block; }
+
+    .training-status {
+      display: none;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 14px;
+      padding: 10px 12px;
+      color: #586476;
+      background: #eef4fb;
+      border: 1px solid #d6e1ec;
+      border-radius: 8px;
+    }
+
+    .workspace.home-mode .training-status {
+      display: grid;
+    }
+
+    .training-status b {
+      display: block;
+      margin-bottom: 3px;
+      color: #7a8797;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .training-status span {
+      color: #2f3847;
+      font-size: clamp(18px, 2.5vw, 26px);
+      font-weight: 800;
+    }
+
+    @media (max-width: 760px) {
+      .page { width: min(100% - 20px, 1000px); padding-top: 24px; }
+      .practice { grid-template-columns: 1fr; }
+      .workspace { padding: 18px; }
+      .target, textarea { font-size: 18px; }
+      .stats { order: -1; }
+      .letter-window { gap: 7px; }
+      .home-practice-row { align-items: stretch; flex-direction: column; }
+      .home-practice-select { width: 100%; flex-basis: auto; }
+      .guide-header { align-items: flex-start; flex-direction: column; }
+      .demo-top { align-items: stretch; flex-direction: column; }
+      .image-button { width: 100%; }
+      .visual-keyboard { min-height: 330px; }
+      .demo-keys { left: 2%; right: 2%; }
+      .palm { width: 120px; height: 58px; bottom: 18px; }
+      .palm.left { left: 7%; }
+      .palm.right { right: 7%; }
+      .finger { width: 24px; height: 64px; font-size: 11px; }
+      .training-status { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <nav class="top-nav" aria-label="页面导航">
+      <a class="back-link" href="tutorial.html">← 返回教程</a>
+      <a class="back-link" href="index.html">返回主页</a>
+    </nav>
+
+    <header class="hero">
+      <h1>打字练习</h1>
+      <p>选择练习内容后直接输入，系统会实时统计速度、准确率、用时和错误数。</p>
+    </header>
+
+    <section class="practice" aria-label="打字练习工具">
+      <div class="workspace" id="practice-workspace">
+        <div class="toolbar" aria-label="练习类型">
+          <button class="mode-button active" type="button" data-mode="home">基准键位</button>
+          <button class="mode-button" type="button" data-mode="chinese">中文短句</button>
+          <button class="mode-button" type="button" data-mode="english">英文单词</button>
+          <button class="mode-button" type="button" data-mode="number">数字符号</button>
+          <button class="action-button primary" id="next-text" type="button">换一段</button>
+          <button class="action-button" id="reset" type="button">重置</button>
+        </div>
+
+        <div class="home-practice-row" aria-label="基准键位练习分类">
+          <label for="home-practice-select">基准键位</label>
+          <select class="home-practice-select" id="home-practice-select">
+            <option value="top">上排键位</option>
+            <option value="bottom">下排键位</option>
+            <option value="finger" selected>分指练习</option>
+            <option value="mixed">综合练习</option>
+          </select>
+        </div>
+
+        <div class="letter-trainer" id="letter-trainer" tabindex="0" aria-label="键位练习区">
+          <div class="letter-window" id="letter-window"></div>
+          <div class="letter-ad" id="letter-ad">键位练习</div>
+          <div class="error-feedback" id="error-feedback" role="status" aria-live="polite"></div>
+        </div>
+
+        <div class="guide-card" id="guide-card">
+          <div class="guide-header">
+            <div>
+              <h2>基准键位图示</h2>
+              <p>左手 A S D F，右手 J K L ;。练习时手指按完其它键后回到基准键位。</p>
+            </div>
+            <button class="image-button" id="toggle-guide-image" type="button">隐藏图片</button>
+          </div>
+          <img class="guide-image" src="images/typing-home-row-guide.png" alt="基准键位键盘和手指位置示意图">
+          <div class="hand-demo" id="hand-demo">
+            <div class="demo-top">
+              <div class="demo-title">
+                <strong>手指按键演示</strong>
+                <span id="next-key-label">下一键：--</span>
+              </div>
+              <button class="image-button" id="play-hand-demo" type="button">自动演示</button>
+            </div>
+            <div class="visual-keyboard" id="visual-keyboard">
+              <div class="demo-keys" id="demo-keys"></div>
+              <div class="hands-layer" id="hands-layer" aria-hidden="true">
+                <div class="palm left"></div>
+                <div class="palm right"></div>
+                <div class="finger left-hand" id="finger-left-pinky">小</div>
+                <div class="finger left-hand" id="finger-left-ring">无</div>
+                <div class="finger left-hand" id="finger-left-middle">中</div>
+                <div class="finger left-hand" id="finger-left-index">食</div>
+                <div class="finger left-hand" id="finger-left-thumb">拇</div>
+                <div class="finger right-hand" id="finger-right-thumb">拇</div>
+                <div class="finger right-hand" id="finger-right-index">食</div>
+                <div class="finger right-hand" id="finger-right-middle">中</div>
+                <div class="finger right-hand" id="finger-right-ring">无</div>
+                <div class="finger right-hand" id="finger-right-pinky">小</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="target" id="target-text" aria-label="练习文本"></div>
+        <textarea class="typing-input" id="typing-input" autocomplete="off" spellcheck="false" placeholder="请在这里输入上方内容，开始输入后自动计时。"></textarea>
+        <div class="training-status" aria-label="键位练习统计">
+          <div><b>输入字数</b><span id="status-typed">0</span></div>
+          <div><b>文章字数</b><span id="status-total">0</span></div>
+          <div><b>计时</b><span id="status-time">00:00:00</span></div>
+          <div><b>准确率</b><span id="status-accuracy">100%</span></div>
+          <div><b>进度</b><span id="status-progress">0%</span></div>
+        </div>
+        <p class="hint" id="hint">提示：输入内容需要和上方文本完全一致，空格和标点也会参与判断。</p>
+      </div>
+
+      <aside class="stats" aria-label="练习结果">
+        <h2>实时结果</h2>
+        <div class="stat-grid">
+          <div class="stat"><b>速度</b><span id="speed">0</span> 字/分</div>
+          <div class="stat"><b>准确率</b><span id="accuracy">100%</span></div>
+          <div class="stat"><b>用时</b><span id="elapsed">0</span> 秒</div>
+          <div class="stat"><b>错误数</b><span id="errors">0</span></div>
+        </div>
+        <div class="complete" id="complete">完成！可以换一段继续练习。</div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const homePracticeTexts = {
+      top: [
+        "QWER TYUI QWER TYUI OP OP",
+        "QQ WW EE RR TT YY UU II OO PP",
+        "QW ER TY UI OP QW ER TY UI OP"
+      ],
+      bottom: [
+        "ZXCV BNM, ZXCV BNM, ./ ./",
+        "ZZ XX CC VV BB NN MM ,, .. //",
+        "ZA XS DC FV JN KM L, ;. /. /."
+      ],
+      finger: [
+        "AAAA SSSS DDDD FFFF JJJJ KKKK LLLL ;;;;",
+        "ASDF JKL; ASDF JKL; FJ FJ DK DK SL SL A;",
+        "AA SS DD FF JJ KK LL ;; ASDF JKL; ASDF"
+      ],
+      mixed: [
+        "QAZ WSX EDC RFV TGB YHN UJM IK, OL. P;/",
+        "ASDF JKL; QWER UIOP ZXCV BNM, ./",
+        "FJ DK SL A; QW ER UI OP ZA XS KM L,"
+      ]
+    };
+
+    const texts = {
+      chinese: [
+        "每天坚持练习十分钟，打字速度会越来越稳定。",
+        "准确率比速度更重要，先打准，再逐步提高节奏。",
+        "保持手指放松，眼睛看屏幕，不要频繁低头看键盘。"
+      ],
+      english: [
+        "practice makes typing faster and more accurate",
+        "focus on steady rhythm before chasing high speed",
+        "small daily habits create visible progress over time"
+      ],
+      number: [
+        "13579 24680 2026-06-23 18:30",
+        "A1B2-C3D4-E5F6 88.60% 192.168.66.18",
+        "10086 95588 400-800-1234 #2026"
+      ]
+    };
+
+    const targetText = document.getElementById("target-text");
+    const input = document.getElementById("typing-input");
+    const practiceWorkspace = document.getElementById("practice-workspace");
+    const homePracticeSelect = document.getElementById("home-practice-select");
+    const letterTrainer = document.getElementById("letter-trainer");
+    const letterWindow = document.getElementById("letter-window");
+    const letterAd = document.getElementById("letter-ad");
+    const errorFeedback = document.getElementById("error-feedback");
+    const speed = document.getElementById("speed");
+    const accuracy = document.getElementById("accuracy");
+    const elapsed = document.getElementById("elapsed");
+    const errors = document.getElementById("errors");
+    const statusTyped = document.getElementById("status-typed");
+    const statusTotal = document.getElementById("status-total");
+    const statusTime = document.getElementById("status-time");
+    const statusAccuracy = document.getElementById("status-accuracy");
+    const statusProgress = document.getElementById("status-progress");
+    const hint = document.getElementById("hint");
+    const complete = document.getElementById("complete");
+    const modeButtons = document.querySelectorAll(".mode-button");
+    const nextTextButton = document.getElementById("next-text");
+    const resetButton = document.getElementById("reset");
+    const guideCard = document.getElementById("guide-card");
+    const toggleGuideImage = document.getElementById("toggle-guide-image");
+    const demoKeys = document.getElementById("demo-keys");
+    const keyboardStage = document.getElementById("visual-keyboard");
+    const nextKeyLabel = document.getElementById("next-key-label");
+    const playHandDemo = document.getElementById("play-hand-demo");
+
+    let mode = "home";
+    let homePractice = homePracticeSelect.value;
+    let index = 0;
+    let startedAt = null;
+    let timer = null;
+    let finished = false;
+    let guideImageVisible = false;
+    let demoPlaying = false;
+    let demoIndex = 0;
+    let demoTimer = null;
+    let audioContext = null;
+    let errorTimer = null;
+
+    const keyRows = [
+      { className: "key-row-top", keys: ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"] },
+      { className: "key-row-home", keys: ["a", "s", "d", "f", "g", "h", "j", "k", "l", ";"] },
+      { className: "key-row-bottom", keys: ["z", "x", "c", "v", "b", "n", "m", ",", ".", "/"] },
+      { className: "key-row-space", keys: [" "] }
+    ];
+
+    const keyFingerMap = {
+      q: "left-pinky", a: "left-pinky", z: "left-pinky",
+      w: "left-ring", s: "left-ring", x: "left-ring",
+      e: "left-middle", d: "left-middle", c: "left-middle",
+      r: "left-index", f: "left-index", v: "left-index", t: "left-index", g: "left-index", b: "left-index",
+      y: "right-index", h: "right-index", n: "right-index", u: "right-index", j: "right-index", m: "right-index",
+      i: "right-middle", k: "right-middle", ",": "right-middle",
+      o: "right-ring", l: "right-ring", ".": "right-ring",
+      p: "right-pinky", ";": "right-pinky", "/": "right-pinky",
+      " ": "right-thumb"
+    };
+
+    const fingerHomeKeys = {
+      "left-pinky": "a",
+      "left-ring": "s",
+      "left-middle": "d",
+      "left-index": "f",
+      "left-thumb": " ",
+      "right-thumb": " ",
+      "right-index": "j",
+      "right-middle": "k",
+      "right-ring": "l",
+      "right-pinky": ";"
+    };
+
+    const fingerNames = {
+      "left-pinky": "左小指",
+      "left-ring": "左无名指",
+      "left-middle": "左中指",
+      "left-index": "左食指",
+      "left-thumb": "左拇指",
+      "right-thumb": "右拇指",
+      "right-index": "右食指",
+      "right-middle": "右中指",
+      "right-ring": "右无名指",
+      "right-pinky": "右小指"
+    };
+
+    const keyElements = new Map();
+
+    function chars(value) {
+      return Array.from(value);
+    }
+
+    function currentTextList() {
+      return mode === "home" ? homePracticeTexts[homePractice] : texts[mode];
+    }
+
+    function currentText() {
+      const list = currentTextList();
+      return list[index] || list[0] || "";
+    }
+
+    function currentHomePracticeLabel() {
+      return homePracticeSelect.selectedOptions[0]?.textContent || "基准键位";
+    }
+
+    function normalizeKey(char) {
+      if (char === "Spacebar") return " ";
+      if (!char) return "";
+      return char === " " ? " " : String(char).toLowerCase();
+    }
+
+    function sameChar(typedChar, targetChar) {
+      return normalizeKey(typedChar) === normalizeKey(targetChar);
+    }
+
+    function isPrintableKey(key) {
+      return key === " " || key === "Spacebar" || String(key).length === 1;
+    }
+
+    function isAsciiPracticeKey(key) {
+      const value = normalizeKey(key);
+      return value === " " || /^[\x21-\x7e]$/.test(value);
+    }
+
+    function getAudioContext() {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return null;
+      if (!audioContext) {
+        audioContext = new AudioContext();
+      }
+      if (audioContext.state === "suspended") {
+        audioContext.resume();
+      }
+      return audioContext;
+    }
+
+    function playTone(frequency, startTime, duration, type, volume) {
+      const context = getAudioContext();
+      if (!context) return;
+
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, startTime);
+      gain.gain.setValueAtTime(0.0001, startTime);
+      gain.gain.exponentialRampToValueAtTime(volume, startTime + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration + 0.02);
+    }
+
+    function playKeySound(isCorrect) {
+      const context = getAudioContext();
+      if (!context) return;
+      const now = context.currentTime;
+      if (isCorrect) {
+        playTone(880, now, 0.055, "sine", 0.08);
+        playTone(1320, now + 0.045, 0.07, "sine", 0.06);
+      } else {
+        playTone(180, now, 0.11, "square", 0.055);
+        playTone(120, now + 0.045, 0.09, "sawtooth", 0.035);
+      }
+    }
+
+    function playTypingFeedback(event) {
+      if (demoPlaying || event.ctrlKey || event.altKey || event.metaKey || event.isComposing) return;
+      if (!isPrintableKey(event.key)) return;
+
+      const expectedKey = expectedGuideKey();
+      if (!expectedKey || !isAsciiPracticeKey(expectedKey)) return;
+      playKeySound(sameChar(event.key, expectedKey));
+    }
+
+    function clearErrorFeedback() {
+      clearTimeout(errorTimer);
+      errorTimer = null;
+      errorFeedback.classList.remove("show");
+      letterTrainer.classList.remove("error-flash");
+      if (!finished) {
+        hint.textContent = defaultHint();
+      }
+    }
+
+    function showErrorFeedback(expectedKey, pressedKey) {
+      clearTimeout(errorTimer);
+      const message = `按错了：应按 ${displayKey(expectedKey)}，实际 ${displayKey(pressedKey)}，可以继续打`;
+      errorFeedback.textContent = message;
+      hint.textContent = message;
+      errorFeedback.classList.add("show");
+      letterTrainer.classList.remove("error-flash");
+      void letterTrainer.offsetWidth;
+      letterTrainer.classList.add("error-flash");
+      errorTimer = setTimeout(() => {
+        errorFeedback.classList.remove("show");
+        letterTrainer.classList.remove("error-flash");
+        if (!finished) {
+          hint.textContent = defaultHint();
+        }
+      }, 1100);
+    }
+
+    function displayKey(char) {
+      const key = normalizeKey(char);
+      if (!key) return "--";
+      if (key === " ") return "空格";
+      if (key === ";") return "分号 ;";
+      return key.toUpperCase();
+    }
+
+    function formatClock(totalSeconds) {
+      const seconds = Math.max(0, totalSeconds);
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const remainingSeconds = seconds % 60;
+      return [hours, minutes, remainingSeconds]
+        .map((value) => String(value).padStart(2, "0"))
+        .join(":");
+    }
+
+    function buildDemoKeyboard() {
+      keyRows.forEach((rowData) => {
+        const row = document.createElement("div");
+        row.className = `key-row ${rowData.className}`;
+        rowData.keys.forEach((key) => {
+          const keyButton = document.createElement("div");
+          keyButton.className = "demo-key";
+          keyButton.dataset.key = key;
+          keyButton.textContent = key === " " ? "SPACE" : key.toUpperCase();
+          if (["a", "s", "d", "f"].includes(key)) {
+            keyButton.classList.add("home-left");
+          }
+          if (["j", "k", "l", ";"].includes(key)) {
+            keyButton.classList.add("home-right");
+          }
+          if (key === " ") {
+            keyButton.classList.add("key-space");
+          }
+          keyElements.set(key, keyButton);
+          row.appendChild(keyButton);
+        });
+        demoKeys.appendChild(row);
+      });
+    }
+
+    function defaultHint() {
+      if (mode === "home") {
+        return `提示：当前为${currentHomePracticeLabel()}，打错会标红并播放低音，但可以继续往后打。`;
+      }
+      return "提示：打错也可以继续往后打；英文大小写不区分，空格和标点仍会参与判断。";
+    }
+
+    function updateGuide() {
+      const isHomeMode = mode === "home";
+      practiceWorkspace.classList.toggle("home-mode", isHomeMode);
+      guideCard.classList.toggle("is-hidden", !isHomeMode);
+      guideCard.classList.toggle("image-collapsed", !guideImageVisible);
+      toggleGuideImage.textContent = guideImageVisible ? "隐藏图片" : "显示图片";
+      letterAd.textContent = isHomeMode ? currentHomePracticeLabel() : "键位练习";
+    }
+
+    function renderLetterWindow() {
+      letterWindow.innerHTML = "";
+      if (mode !== "home") return;
+
+      const target = chars(currentText());
+      const guideIndex = currentGuideIndex();
+      const start = Math.min(guideIndex, Math.max(target.length - 8, 0));
+      const visible = target.slice(start, start + 8);
+
+      if (!visible.length) {
+        const doneCard = document.createElement("div");
+        doneCard.className = "letter-card active";
+        doneCard.textContent = "完成";
+        letterWindow.appendChild(doneCard);
+        return;
+      }
+
+      visible.forEach((char, offset) => {
+        const absoluteIndex = start + offset;
+        const card = document.createElement("div");
+        card.className = "letter-card";
+        if (absoluteIndex === guideIndex) {
+          card.classList.add("active");
+        }
+        if (char === " ") {
+          card.classList.add("space-card");
+          card.textContent = "空格";
+        } else {
+          card.textContent = char;
+        }
+        letterWindow.appendChild(card);
+      });
+    }
+
+    function currentGuideIndex() {
+      const typed = chars(input.value);
+      const target = chars(currentText());
+      return Math.min(typed.length, target.length);
+    }
+
+    function expectedGuideKey() {
+      return chars(currentText())[currentGuideIndex()] || "";
+    }
+
+    function clearDemoState() {
+      keyElements.forEach((key) => key.classList.remove("next-key", "pressed", "need-correction"));
+      Object.keys(fingerHomeKeys).forEach((fingerName) => {
+        const finger = document.getElementById(`finger-${fingerName}`);
+        finger.classList.remove("active", "pressing");
+      });
+    }
+
+    function placeFinger(fingerName, key, active = false, pressing = false) {
+      const finger = document.getElementById(`finger-${fingerName}`);
+      const keyElement = keyElements.get(key) || keyElements.get(fingerHomeKeys[fingerName]);
+      if (!finger || !keyElement) return;
+
+      const stageRect = keyboardStage.getBoundingClientRect();
+      const keyRect = keyElement.getBoundingClientRect();
+      const fingerRect = finger.getBoundingClientRect();
+      if (!stageRect.width || !keyRect.width) return;
+
+      const fingerHalfHeight = fingerRect.height / 2 || 38;
+      const yGap = active ? 12 : 18;
+      const x = keyRect.left - stageRect.left + keyRect.width / 2;
+      const y = keyRect.bottom - stageRect.top + fingerHalfHeight + yGap;
+      finger.style.left = `${x}px`;
+      finger.style.top = `${y}px`;
+      finger.classList.toggle("active", active);
+
+      if (pressing) {
+        finger.classList.remove("pressing");
+        void finger.offsetWidth;
+        finger.classList.add("pressing");
+      }
+    }
+
+    function moveHandsToKey(char, pressing = false, correction = false) {
+      if (mode !== "home") return;
+      const key = normalizeKey(char);
+      clearDemoState();
+
+      if (!key) {
+        Object.entries(fingerHomeKeys).forEach(([fingerName, homeKey]) => {
+          placeFinger(fingerName, homeKey);
+        });
+        nextKeyLabel.textContent = "下一键：已完成";
+        return;
+      }
+
+      const activeFinger = keyFingerMap[key] || null;
+      keyElements.get(key)?.classList.add(correction ? "need-correction" : "next-key");
+      if (pressing) {
+        const keyElement = keyElements.get(key);
+        if (keyElement) {
+          keyElement.classList.remove("pressed");
+          void keyElement.offsetWidth;
+          keyElement.classList.add("pressed");
+        }
+      }
+
+      Object.entries(fingerHomeKeys).forEach(([fingerName, homeKey]) => {
+        const targetKey = fingerName === activeFinger ? key : homeKey;
+        placeFinger(fingerName, targetKey, fingerName === activeFinger, pressing && fingerName === activeFinger);
+      });
+
+      if (correction) {
+        nextKeyLabel.textContent = activeFinger
+          ? `刚才按错：下一键 ${displayKey(key)}，使用${fingerNames[activeFinger]}`
+          : `刚才按错：下一键 ${displayKey(key)}`;
+      } else {
+        nextKeyLabel.textContent = activeFinger
+          ? `下一键：${displayKey(key)}，使用${fingerNames[activeFinger]}`
+          : `下一键：${displayKey(key)}`;
+      }
+    }
+
+    function updateHandDemo() {
+      if (mode !== "home" || demoPlaying) return;
+      const guideIndex = currentGuideIndex();
+      const target = chars(currentText());
+      const nextChar = target[guideIndex] || "";
+      requestAnimationFrame(() => moveHandsToKey(nextChar, false, false));
+    }
+
+    function renderTarget() {
+      const typed = chars(input.value);
+      const target = chars(currentText());
+      const guideIndex = currentGuideIndex();
+      targetText.innerHTML = "";
+
+      target.forEach((char, position) => {
+        const span = document.createElement("span");
+        span.textContent = char === " " ? "\u00A0" : char;
+        if (position < typed.length) {
+          span.className = sameChar(typed[position], char) ? "correct" : "wrong";
+        } else if (position === guideIndex && !finished) {
+          span.className = "current";
+        }
+        targetText.appendChild(span);
+      });
+      renderLetterWindow();
+      updateHandDemo();
+    }
+
+    function calculateStats() {
+      const typed = chars(input.value);
+      const target = chars(currentText());
+      let correct = 0;
+      let wrong = 0;
+
+      typed.forEach((char, position) => {
+        if (sameChar(char, target[position])) {
+          correct += 1;
+        } else {
+          wrong += 1;
+        }
+      });
+
+      const seconds = startedAt ? Math.max(1, Math.floor((Date.now() - startedAt) / 1000)) : 0;
+      const minutes = Math.max(seconds / 60, 1 / 60);
+      const percent = typed.length ? Math.round((correct / typed.length) * 100) : 100;
+      const cpm = Math.round(correct / minutes);
+      const progress = target.length ? Math.min(100, Math.round((currentGuideIndex() / target.length) * 100)) : 100;
+
+      speed.textContent = cpm;
+      accuracy.textContent = `${percent}%`;
+      elapsed.textContent = seconds;
+      errors.textContent = wrong;
+      statusTyped.textContent = currentGuideIndex();
+      statusTotal.textContent = target.length;
+      statusTime.textContent = formatClock(seconds);
+      statusAccuracy.textContent = `${percent}%`;
+      statusProgress.textContent = `${progress}%`;
+
+      const isComplete = typed.length >= target.length;
+      if (isComplete && !finished) {
+        finished = true;
+        clearInterval(timer);
+        complete.classList.add("show");
+        hint.textContent = wrong > 0
+          ? "已完成，本次有错字；可以点击“换一段”继续练习。"
+          : "完成后可以点击“换一段”继续练习。";
+      }
+    }
+
+    function update() {
+      if (!startedAt && input.value.length > 0) {
+        startedAt = Date.now();
+        timer = setInterval(calculateStats, 500);
+      }
+      renderTarget();
+      calculateStats();
+    }
+
+    function resetPractice(keepText = true) {
+      stopHandDemo(false);
+      clearInterval(timer);
+      timer = null;
+      startedAt = null;
+      finished = false;
+      input.value = "";
+      speed.textContent = "0";
+      accuracy.textContent = "100%";
+      elapsed.textContent = "0";
+      errors.textContent = "0";
+      clearErrorFeedback();
+      statusTyped.textContent = "0";
+      statusTotal.textContent = chars(currentText()).length;
+      statusTime.textContent = "00:00:00";
+      statusAccuracy.textContent = "100%";
+      statusProgress.textContent = "0%";
+      complete.classList.remove("show");
+      hint.textContent = defaultHint();
+      if (!keepText) {
+        index = (index + 1) % currentTextList().length;
+      }
+      updateGuide();
+      renderTarget();
+      input.focus();
+    }
+
+    function stopHandDemo(refresh = true) {
+      clearInterval(demoTimer);
+      demoTimer = null;
+      demoPlaying = false;
+      demoIndex = 0;
+      playHandDemo.textContent = "自动演示";
+      if (refresh) updateHandDemo();
+    }
+
+    function playDemoStep() {
+      const target = chars(currentText());
+      if (demoIndex >= target.length) {
+        stopHandDemo(false);
+        moveHandsToKey("");
+        nextKeyLabel.textContent = "演示完成，可以自己练习了";
+        return;
+      }
+      moveHandsToKey(target[demoIndex], true);
+      demoIndex += 1;
+    }
+
+    function toggleHandDemo() {
+      if (mode !== "home") return;
+      if (demoPlaying) {
+        stopHandDemo(true);
+        return;
+      }
+      demoPlaying = true;
+      demoIndex = 0;
+      playHandDemo.textContent = "停止演示";
+      playDemoStep();
+      demoTimer = setInterval(playDemoStep, 650);
+    }
+
+    modeButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        mode = button.dataset.mode;
+        index = 0;
+        modeButtons.forEach((item) => item.classList.toggle("active", item === button));
+        resetPractice(true);
+      });
+    });
+
+    homePracticeSelect.addEventListener("change", () => {
+      homePractice = homePracticeSelect.value;
+      index = 0;
+      resetPractice(true);
+    });
+
+    input.addEventListener("input", update);
+    input.addEventListener("keydown", (event) => {
+      playTypingFeedback(event);
+      const canJudgeKey =
+        !demoPlaying
+        && !event.ctrlKey
+        && !event.altKey
+        && !event.metaKey
+        && !event.isComposing
+        && isPrintableKey(event.key);
+      const expectedRawKey = expectedGuideKey();
+      const expectedKey = normalizeKey(expectedRawKey);
+      const pressedKey = normalizeKey(event.key);
+
+      if (canJudgeKey && expectedRawKey && isAsciiPracticeKey(expectedRawKey)) {
+        if (sameChar(event.key, expectedRawKey)) {
+          clearErrorFeedback();
+        } else {
+          showErrorFeedback(expectedRawKey, event.key);
+        }
+      }
+
+      if (mode !== "home" || demoPlaying) return;
+      if (!keyFingerMap[expectedKey]) return;
+      if (sameChar(pressedKey, expectedKey)) {
+        moveHandsToKey(expectedKey, true);
+      } else if (keyFingerMap[pressedKey]) {
+        moveHandsToKey(expectedKey, false, true);
+      }
+    });
+    toggleGuideImage.addEventListener("click", () => {
+      guideImageVisible = !guideImageVisible;
+      updateGuide();
+    });
+    playHandDemo.addEventListener("click", toggleHandDemo);
+    letterTrainer.addEventListener("click", () => input.focus());
+    keyboardStage.addEventListener("click", () => input.focus());
+    practiceWorkspace.addEventListener("click", (event) => {
+      if (event.target.closest("button, select, option, label, input, textarea")) return;
+      input.focus();
+    });
+    window.addEventListener("resize", updateHandDemo);
+    nextTextButton.addEventListener("click", () => resetPractice(false));
+    resetButton.addEventListener("click", () => resetPractice(true));
+
+    buildDemoKeyboard();
+    resetPractice(true);
+  </script>
+</body>
+</html>
