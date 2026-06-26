@@ -1533,6 +1533,45 @@
         display: none;
       }
 
+      .death-detail {
+        margin: 10px 0 0;
+        padding: 10px 12px;
+        border: 2px solid rgba(255, 214, 90, 0.36);
+        color: var(--gold);
+        background:
+          radial-gradient(circle at 4px 4px, rgba(255, 255, 255, 0.08) 0 1px, transparent 1.4px),
+          rgba(52, 25, 16, 0.56);
+        background-size:
+          12px 12px,
+          auto;
+        font-size: 0.9rem;
+      }
+
+      .death-detail:empty {
+        display: none;
+      }
+
+      .share-output {
+        display: none;
+        width: 100%;
+        min-height: 84px;
+        margin-top: 10px;
+        padding: 10px;
+        resize: vertical;
+        border: 2px solid rgba(220, 255, 214, 0.35);
+        border-radius: 0;
+        color: var(--cream);
+        background: rgba(3, 18, 8, 0.76);
+        font-family:
+          system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 0.78rem;
+        line-height: 1.5;
+      }
+
+      .share-output.show {
+        display: block;
+      }
+
       .move-guide {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1920,7 +1959,9 @@
       <div class="modal-panel">
         <h2 id="gameOverTitle">游戏结束</h2>
         <p id="gameOverText"></p>
+        <p id="gameOverDeath" class="death-detail"></p>
         <p id="shareStatus" class="share-status" aria-live="polite"></p>
+        <textarea id="shareOutput" class="share-output" readonly aria-label="分享内容"></textarea>
         <div class="modal-actions game-over-actions">
           <button id="againBtn" class="btn primary" type="button">再来一局</button>
           <button id="shareBtn" class="btn share-btn" type="button">分享微信</button>
@@ -2008,7 +2049,9 @@
         scoutBtn: document.getElementById("scoutBtn"),
         gameOver: document.getElementById("gameOver"),
         gameOverText: document.getElementById("gameOverText"),
+        gameOverDeath: document.getElementById("gameOverDeath"),
         shareStatus: document.getElementById("shareStatus"),
+        shareOutput: document.getElementById("shareOutput"),
         helpModal: document.getElementById("helpModal"),
       };
 
@@ -2196,7 +2239,10 @@
         state.scoutUntil = 0;
         state.lastCapture = null;
         state.lastDeath = null;
+        els.gameOverDeath.textContent = "";
         els.shareStatus.textContent = "";
+        els.shareOutput.classList.remove("show");
+        els.shareOutput.value = "";
         const start = Math.min(3, state.size - 2);
         addEnemy(start, start, "knight");
         moveEnemies(true);
@@ -2305,7 +2351,7 @@
         const death = moveEnemies(false);
         if (death) {
           state.alive = false;
-          state.lastDeath = { x: state.player.x, y: state.player.y };
+          state.lastDeath = { x: state.player.x, y: state.player.y, ...death };
           render();
           if (capturedPiece) triggerCaptureFeedback();
           finishGame(death);
@@ -2327,12 +2373,23 @@
 
       function moveEnemies(opening) {
         for (const enemy of state.enemies) {
+          const fromX = enemy.x;
+          const fromY = enemy.y;
           const target = chooseEnemyStep(enemy);
           if (!target) continue;
           enemy.x = target.x;
           enemy.y = target.y;
           if (isPlayerAt(enemy.x, enemy.y)) {
-            if (!opening) return enemy;
+            if (!opening) {
+              return {
+                id: enemy.id,
+                piece: enemy.piece,
+                fromX,
+                fromY,
+                toX: target.x,
+                toY: target.y,
+              };
+            }
           }
         }
         return null;
@@ -2404,9 +2461,28 @@
         setBest(state.score);
         const label = killer ? PIECE_LABEL[killer.piece] : "敌人";
         els.gameOverText.textContent = `你捕获了 ${state.score} 个敌人，用了 ${state.moves} 步。最后被${label}拦住了取经路。`;
+        els.gameOverDeath.textContent = killer ? `死因：${deathDetailText(killer)}` : "死因：敌人移动到了唐僧所在的格子。";
         els.shareStatus.textContent = "";
+        els.shareOutput.classList.remove("show");
+        els.shareOutput.value = "";
         openModal(els.gameOver);
         writeLog("取经失败。重开可以继续挑战这个种子。");
+      }
+
+      function boardPos(x, y) {
+        return `第${y + 1}行第${x + 1}列`;
+      }
+
+      function routeText(death) {
+        if (death.piece === "knight") return "按日字形";
+        if (death.piece === "rook") return death.fromY === death.toY ? "沿横线" : "沿竖线";
+        if (death.piece === "bishop") return "沿斜线";
+        return "按棋路";
+      }
+
+      function deathDetailText(death) {
+        const label = PIECE_LABEL[death.piece] || "敌人";
+        return `你停在${boardPos(death.toX, death.toY)}，${label}从${boardPos(death.fromX, death.fromY)}${routeText(death)}追到这里，吃掉了唐僧。`;
       }
 
       function shareGameUrl() {
@@ -2420,7 +2496,8 @@
 
       function shareGameText() {
         const stoneText = state.stoneSeed && state.stoneSeed !== state.seed ? `，石阵 ${state.stoneSeed}` : "";
-        return `我在《唐僧棋阵》捕获了 ${state.score} 个敌人，用了 ${state.moves} 步，棋盘 ${state.size}x${state.size}，种子 ${state.seed}${stoneText}。来挑战我的成绩！`;
+        const deathText = state.lastDeath ? `死因：${deathDetailText(state.lastDeath)}` : "";
+        return `我在《唐僧棋阵》捕获了 ${state.score} 个敌人，用了 ${state.moves} 步，棋盘 ${state.size}x${state.size}，种子 ${state.seed}${stoneText}。${deathText}来挑战我的成绩！`;
       }
 
       async function copyShareText(text) {
@@ -2445,15 +2522,18 @@
         const title = "唐僧棋阵";
         const text = shareGameText();
         const url = shareGameUrl();
+        const fullText = `${text}\n${url}`;
         const sharePayload = { title, text, url };
         els.shareStatus.textContent = "";
+        els.shareOutput.classList.remove("show");
+        els.shareOutput.value = fullText;
         try {
           if (navigator.share && navigator.canShare?.(sharePayload) !== false) {
             await navigator.share(sharePayload);
             els.shareStatus.textContent = "已打开分享面板，请选择微信好友发送。";
             return;
           }
-          await copyShareText(`${text}\n${url}`);
+          await copyShareText(fullText);
           els.shareStatus.textContent = "成绩和链接已复制，打开微信好友聊天粘贴发送即可。";
         } catch (error) {
           if (error && error.name === "AbortError") {
@@ -2461,10 +2541,13 @@
             return;
           }
           try {
-            await copyShareText(`${text}\n${url}`);
+            await copyShareText(fullText);
             els.shareStatus.textContent = "成绩和链接已复制，打开微信好友聊天粘贴发送即可。";
           } catch {
-            els.shareStatus.textContent = "当前浏览器不支持直接分享，请手动复制页面链接发送给微信好友。";
+            els.shareOutput.classList.add("show");
+            els.shareOutput.focus();
+            els.shareOutput.select();
+            els.shareStatus.textContent = "当前浏览器不能自动复制，请长按或全选下方内容发给微信好友。";
           }
         }
       }
