@@ -1,0 +1,2702 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>唐僧棋阵</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #10180f;
+        --ink: #071007;
+        --panel: #162c1c;
+        --panel-strong: #203a23;
+        --line: #5c7c55;
+        --cream: #e7f5df;
+        --muted: #9db89b;
+        --gold: #ffd65a;
+        --rose: #ff5972;
+        --cyan: #62d6ff;
+        --violet: #a28cff;
+        --floor-a: #0c8f50;
+        --floor-b: #11b85c;
+        --floor-deep: #076235;
+        --danger: #b9364f;
+        --legal: #ffd65a;
+        --capture: #62d6ff;
+        --pixel-shadow: #050a05;
+        --dot-light: rgba(255, 255, 255, 0.42);
+        --dot-mid: rgba(255, 214, 90, 0.56);
+        --dot-blue: rgba(98, 214, 255, 0.5);
+        --dot-dark: rgba(0, 0, 0, 0.28);
+        font-family:
+          ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo,
+          monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+        image-rendering: pixelated;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        margin: 0;
+        color: var(--cream);
+        background:
+          radial-gradient(circle at 3px 3px, rgba(255, 214, 90, 0.18) 0 1px, transparent 1.5px),
+          radial-gradient(circle at 11px 11px, rgba(98, 214, 255, 0.09) 0 1px, transparent 1.5px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+          linear-gradient(0deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          var(--bg);
+        background-size:
+          16px 16px,
+          16px 16px,
+          16px 16px,
+          16px 16px,
+          auto;
+      }
+
+      button,
+      select,
+      input {
+        font: inherit;
+      }
+
+      button {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .app {
+        min-height: 100dvh;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
+        gap: clamp(12px, 2.4vw, 22px);
+        padding: clamp(12px, 2.8vw, 26px);
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .brand {
+        min-width: 0;
+      }
+
+      .brand h1 {
+        margin: 0;
+        color: var(--gold);
+        font-size: clamp(1.1rem, 2.8vw, 2rem);
+        line-height: 1.05;
+        letter-spacing: 0;
+        text-shadow:
+          3px 0 0 var(--ink),
+          0 3px 0 var(--ink),
+          3px 3px 0 var(--ink);
+      }
+
+      .seed {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 0.76rem;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+      }
+
+      .top-actions,
+      .controls {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .game-shell {
+        width: min(1180px, 100%);
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(280px, 72vh) minmax(260px, 340px);
+        align-items: start;
+        justify-content: center;
+        gap: clamp(16px, 3vw, 28px);
+      }
+
+      .board-wrap {
+        position: relative;
+        width: 100%;
+        max-width: min(78vh, 760px);
+        margin: 0 auto;
+      }
+
+      .board {
+        --n: 8;
+        display: grid;
+        grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+        aspect-ratio: 1;
+        width: 100%;
+        background: var(--ink);
+        border: clamp(7px, 1.5vw, 12px) solid var(--ink);
+        box-shadow:
+          0 0 0 4px #4d7a3b,
+          0 0 0 8px var(--ink),
+          12px 12px 0 var(--pixel-shadow);
+        image-rendering: pixelated;
+      }
+
+      .tile {
+        position: relative;
+        min-width: 0;
+        min-height: 0;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        border: 2px solid #06441f;
+        background:
+          radial-gradient(circle at 4px 4px, rgba(255, 255, 255, 0.24) 0 1.8px, transparent 2px),
+          radial-gradient(circle at 13px 12px, rgba(255, 214, 90, 0.34) 0 1.6px, transparent 2px),
+          radial-gradient(circle at 18px 6px, rgba(98, 214, 255, 0.28) 0 1.2px, transparent 1.6px),
+          linear-gradient(135deg, #07512f 0 50%, #08673b 50% 100%);
+        background-size:
+          22px 22px,
+          24px 24px,
+          28px 28px,
+          100% 100%;
+        box-shadow:
+          inset 4px 4px 0 rgba(255, 255, 255, 0.08),
+          inset -4px -4px 0 rgba(0, 0, 0, 0.2);
+        cursor: default;
+        overflow: hidden;
+      }
+
+      .tile.odd {
+        border-color: #087744;
+        background:
+          radial-gradient(circle at 7px 5px, rgba(255, 255, 255, 0.42) 0 1.7px, transparent 2px),
+          radial-gradient(circle at 15px 16px, rgba(98, 214, 255, 0.58) 0 1.6px, transparent 2px),
+          radial-gradient(circle at 21px 8px, rgba(255, 214, 90, 0.54) 0 1.2px, transparent 1.7px),
+          linear-gradient(135deg, #10a95c 0 50%, #17c970 50% 100%);
+        background-size:
+          24px 24px,
+          22px 22px,
+          28px 28px,
+          100% 100%;
+      }
+
+      .tile::after {
+        content: "";
+        position: absolute;
+        inset: 8%;
+        border: 3px solid rgba(3, 45, 22, 0.55);
+        pointer-events: none;
+      }
+
+      .tile.danger {
+        background:
+          radial-gradient(circle at 4px 4px, rgba(255, 255, 255, 0.44) 0 1.8px, transparent 2px),
+          radial-gradient(circle at 13px 13px, rgba(255, 214, 90, 0.36) 0 1.5px, transparent 1.9px),
+          radial-gradient(circle at 21px 8px, rgba(0, 0, 0, 0.3) 0 1.6px, transparent 2px),
+          linear-gradient(135deg, #7a2439 0 50%, #922b47 50% 100%);
+        background-size:
+          18px 18px,
+          22px 22px,
+          26px 26px,
+          100% 100%;
+      }
+
+      .tile.danger.odd {
+        background:
+          radial-gradient(circle at 4px 4px, rgba(255, 255, 255, 0.48) 0 1.8px, transparent 2px),
+          radial-gradient(circle at 13px 13px, rgba(255, 214, 90, 0.42) 0 1.5px, transparent 1.9px),
+          radial-gradient(circle at 21px 8px, rgba(0, 0, 0, 0.24) 0 1.6px, transparent 2px),
+          linear-gradient(135deg, #bb3954 0 50%, #d44b66 50% 100%);
+        background-size:
+          18px 18px,
+          22px 22px,
+          26px 26px,
+          100% 100%;
+      }
+
+      .tile.legal {
+        cursor: pointer;
+      }
+
+      .tile.legal::before,
+      .tile.capture::before {
+        content: "";
+        position: absolute;
+        width: 7px;
+        height: 7px;
+        background: var(--legal);
+        box-shadow:
+          0 0 0 3px var(--ink),
+          -13px 0 0 var(--legal),
+          13px 0 0 var(--legal),
+          0 -13px 0 var(--legal),
+          0 13px 0 var(--legal),
+          10px 10px 0 rgba(0, 0, 0, 0.38);
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      .tile.capture::before {
+        width: 58%;
+        height: 58%;
+        background: transparent;
+        border: 5px dotted var(--capture);
+        box-shadow:
+          inset 0 0 0 4px rgba(0, 0, 0, 0.25),
+          4px 4px 0 rgba(0, 0, 0, 0.36);
+      }
+
+      .tile.wall {
+        background:
+          radial-gradient(circle at 5px 5px, rgba(255, 255, 255, 0.2) 0 1.7px, transparent 2px),
+          radial-gradient(circle at 15px 13px, rgba(0, 0, 0, 0.32) 0 1.8px, transparent 2.2px),
+          linear-gradient(135deg, #064325 0 50%, #07542f 50% 100%);
+        background-size:
+          20px 20px,
+          24px 24px,
+          100% 100%;
+      }
+
+      .tile.wall.odd {
+        background:
+          radial-gradient(circle at 5px 5px, rgba(255, 255, 255, 0.25) 0 1.7px, transparent 2px),
+          radial-gradient(circle at 15px 13px, rgba(0, 0, 0, 0.24) 0 1.8px, transparent 2.2px),
+          linear-gradient(135deg, #0b6f40 0 50%, #0a8248 50% 100%);
+        background-size:
+          20px 20px,
+          24px 24px,
+          100% 100%;
+      }
+
+      .tile.wall::after {
+        border-color: rgba(4, 35, 20, 0.24);
+      }
+
+      .sprite {
+        position: relative;
+        z-index: 4;
+        width: 72%;
+        height: 82%;
+        transform: translateY(-2%);
+        filter: drop-shadow(5px 5px 0 rgba(0, 0, 0, 0.5));
+        pointer-events: none;
+      }
+
+      .rock {
+        width: 70%;
+        height: 62%;
+        border: 4px solid #3b302c;
+        background:
+          radial-gradient(circle at 5px 5px, rgba(255, 255, 255, 0.62) 0 1.6px, transparent 2px),
+          radial-gradient(circle at 15px 13px, rgba(0, 0, 0, 0.4) 0 1.7px, transparent 2px),
+          linear-gradient(90deg, #d6b9a2 0 22%, #b09685 22% 48%, #806c63 48% 76%, #5d514c 76%),
+          #9b8979;
+        background-size:
+          18px 18px,
+          20px 20px,
+          100% 100%,
+          auto;
+        clip-path: polygon(14% 12%, 72% 0, 100% 28%, 90% 84%, 22% 100%, 0 64%);
+        transform: translateY(6%);
+      }
+
+      .rock::after {
+        content: "";
+        position: absolute;
+        left: 10%;
+        right: 8%;
+        bottom: -12%;
+        height: 18%;
+        background: rgba(0, 0, 0, 0.38);
+      }
+
+      .player {
+        width: 88%;
+        height: 98%;
+        transform: translateY(-5%);
+        background:
+          linear-gradient(90deg, transparent 0 79%, #6b3c04 79% 83%, #ffd65a 83% 90%, #6b3c04 90% 94%, transparent 94%),
+          linear-gradient(0deg, transparent 0 7%, #5f3800 7% 10%, transparent 10%),
+          radial-gradient(circle at 86% 10%, rgba(255, 230, 106, 0.35) 0 13px, transparent 13.5px);
+        background-size:
+          100% 100%,
+          100% 100%,
+          100% 100%;
+      }
+
+      .player::before {
+        content: "";
+        position: absolute;
+        left: 14%;
+        right: 23%;
+        bottom: 5%;
+        height: 61%;
+        border: 4px solid #4a110b;
+        background:
+          radial-gradient(circle at 7px 6px, rgba(255, 238, 143, 0.75) 0 1.8px, transparent 2.2px),
+          radial-gradient(circle at 18px 16px, rgba(104, 18, 8, 0.5) 0 1.7px, transparent 2.2px),
+          linear-gradient(135deg, transparent 0 26%, #f8f3df 26% 39%, #273849 39% 43%, transparent 43%),
+          linear-gradient(90deg, #961c16 0 24%, #f0521e 24% 70%, #b81816 70%),
+          linear-gradient(0deg, #3b1710 0 9%, transparent 9%),
+          #e63b1e;
+        background-size:
+          16px 16px,
+          18px 18px,
+          100% 100%,
+          100% 100%,
+          100% 100%,
+          auto;
+        box-shadow:
+          -7px 11px 0 #1b0c08,
+          8px 11px 0 #1b0c08,
+          0 -15px 0 -2px #ffd0bd,
+          0 -20px 0 -7px #14110d,
+          -12px -1px 0 -7px #ffd0bd,
+          12px -1px 0 -7px #ffd0bd;
+        z-index: 2;
+      }
+
+      .player::after {
+        content: "";
+        position: absolute;
+        left: 7%;
+        right: 22%;
+        top: 0;
+        height: 32%;
+        background:
+          radial-gradient(circle at 6px 5px, rgba(255, 255, 255, 0.74) 0 1.4px, transparent 1.8px),
+          radial-gradient(circle at 15px 10px, rgba(105, 24, 10, 0.45) 0 1.5px, transparent 1.9px),
+          linear-gradient(90deg, #b90f16 0 14%, #ffcf3b 14% 30%, #f43a19 30% 48%, #ffcf3b 48% 66%, #b90f16 66% 82%, #ffcf3b 82%),
+          #f43a19;
+        background-size:
+          12px 12px,
+          14px 14px,
+          100% 100%,
+          auto;
+        clip-path: polygon(0 100%, 0 35%, 13% 55%, 23% 5%, 38% 55%, 52% 0, 67% 55%, 82% 8%, 100% 35%, 100% 100%);
+        border: 3px solid #4a110b;
+        box-shadow:
+          0 4px 0 #ffd65a,
+          10px 3px 0 -7px #fff3a1,
+          -10px 3px 0 -7px #fff3a1;
+        z-index: 7;
+      }
+
+      .monk-face,
+      .monk-sash,
+      .monk-hand,
+      .monk-beads,
+      .monk-feet,
+      .monk-staff-tip,
+      .monk-staff-ring {
+        position: absolute;
+        pointer-events: none;
+      }
+
+      .monk-face {
+        left: 18%;
+        top: 22%;
+        width: 50%;
+        height: 31%;
+        z-index: 6;
+        border: 3px solid #1c1010;
+        background:
+          radial-gradient(circle at 30% 43%, #111926 0 2.3px, transparent 2.7px),
+          radial-gradient(circle at 70% 43%, #111926 0 2.3px, transparent 2.7px),
+          linear-gradient(90deg, transparent 0 36%, #a33a33 36% 64%, transparent 64%) 50% 76% / 14px 4px no-repeat,
+          radial-gradient(circle at 13% 64%, #ff9f9f 0 2.4px, transparent 2.9px),
+          radial-gradient(circle at 87% 64%, #ff9f9f 0 2.4px, transparent 2.9px),
+          radial-gradient(circle at 5px 5px, rgba(255, 255, 255, 0.62) 0 1.4px, transparent 1.8px),
+          #ffd0bd;
+        box-shadow:
+          -9px 8px 0 -2px #ffd0bd,
+          9px 8px 0 -2px #ffd0bd,
+          -12px 9px 0 -5px #1c1010,
+          12px 9px 0 -5px #1c1010,
+          0 5px 0 rgba(120, 45, 36, 0.22);
+      }
+
+      .monk-face::before {
+        content: "";
+        position: absolute;
+        left: 16%;
+        right: 16%;
+        top: 20%;
+        height: 3px;
+        background:
+          linear-gradient(90deg, #2d1717 0 28%, transparent 28% 72%, #2d1717 72%);
+      }
+
+      .monk-face::after {
+        content: "";
+        position: absolute;
+        left: 38%;
+        top: 10%;
+        width: 21%;
+        height: 5px;
+        background: #f6e9da;
+        box-shadow:
+          0 -4px 0 #2d1717,
+          0 17px 0 -1px #d88675;
+      }
+
+      .monk-sash {
+        left: 18%;
+        bottom: 30%;
+        width: 48%;
+        height: 11%;
+        z-index: 8;
+        border: 2px solid #22303c;
+        background:
+          radial-gradient(circle at 4px 4px, rgba(255, 255, 255, 0.8) 0 1.4px, transparent 1.8px),
+          #f4f4ec;
+        background-size: 10px 10px, auto;
+        transform: rotate(-26deg);
+      }
+
+      .monk-hand {
+        z-index: 9;
+        width: 10px;
+        height: 13px;
+        border: 2px solid #1c1010;
+        background: #ffd0bd;
+      }
+
+      .monk-hand.left {
+        left: 8%;
+        top: 51%;
+        box-shadow: -5px 3px 0 -2px #ffd0bd;
+      }
+
+      .monk-hand.right {
+        right: 10%;
+        top: 44%;
+        box-shadow:
+          4px 2px 0 -1px #ffd0bd,
+          8px 0 0 -4px #1c1010;
+      }
+
+      .monk-beads {
+        left: 24%;
+        top: 58%;
+        width: 5px;
+        height: 5px;
+        z-index: 10;
+        background: #ffe58a;
+        box-shadow:
+          7px 3px 0 #6b3c04,
+          14px 5px 0 #ffe58a,
+          21px 4px 0 #6b3c04,
+          28px 1px 0 #ffe58a;
+      }
+
+      .monk-feet {
+        left: 22%;
+        right: 29%;
+        bottom: 0;
+        height: 8px;
+        z-index: 9;
+        background:
+          linear-gradient(90deg, #f6f4e8 0 42%, transparent 42% 58%, #f6f4e8 58%);
+        box-shadow:
+          0 3px 0 #15110e,
+          0 -2px 0 rgba(255, 255, 255, 0.24);
+      }
+
+      .monk-staff-tip {
+        right: 0;
+        top: 14%;
+        width: 21px;
+        height: 24px;
+        z-index: 10;
+        background:
+          linear-gradient(90deg, transparent 0 38%, #ffd65a 38% 62%, transparent 62%),
+          linear-gradient(135deg, transparent 0 38%, #ffd65a 38% 62%, transparent 62%),
+          linear-gradient(45deg, transparent 0 38%, #ffd65a 38% 62%, transparent 62%);
+        filter: drop-shadow(2px 2px 0 #5f3800);
+      }
+
+      .monk-staff-ring {
+        right: -1%;
+        top: 3%;
+        width: 24px;
+        height: 18px;
+        z-index: 11;
+        border: 4px solid #ffd65a;
+        box-shadow:
+          inset 0 0 0 2px #fff3a1,
+          2px 2px 0 #5f3800;
+      }
+
+      .enemy {
+        width: 60%;
+        height: 76%;
+      }
+
+      .enemy::before {
+        content: "";
+        position: absolute;
+        left: 14%;
+        right: 14%;
+        bottom: 8%;
+        height: 62%;
+        border: 4px solid rgba(0, 0, 0, 0.7);
+        background:
+          radial-gradient(circle at 5px 5px, rgba(255, 255, 255, 0.58) 0 1.7px, transparent 2px),
+          radial-gradient(circle at 15px 13px, rgba(0, 0, 0, 0.35) 0 1.7px, transparent 2px),
+          var(--piece-color);
+        background-size:
+          16px 16px,
+          20px 20px,
+          auto;
+        box-shadow:
+          inset -7px 0 0 rgba(0, 0, 0, 0.18),
+          0 -12px 0 -2px var(--piece-head);
+      }
+
+      .enemy::after {
+        position: absolute;
+        inset: 4% 0 auto;
+        height: 40%;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-size: clamp(13px, 3vw, 22px);
+        font-weight: 900;
+        line-height: 1;
+        text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.62);
+      }
+
+      .enemy.rook {
+        --piece-color: #ffefe8;
+        --piece-head: #ffd2bd;
+        width: 96%;
+        height: 94%;
+        transform: translateY(-3%);
+      }
+
+      .enemy.rook::before {
+        left: 23%;
+        right: 23%;
+        bottom: 5%;
+        height: 52%;
+        z-index: 5;
+        border: 4px solid #171019;
+        background:
+          radial-gradient(circle at 7px 6px, rgba(255, 255, 255, 0.78) 0 1.6px, transparent 2px),
+          radial-gradient(circle at 18px 16px, rgba(255, 88, 72, 0.35) 0 1.6px, transparent 2px),
+          linear-gradient(90deg, #1f64b4 0 13%, #fff3df 13% 33%, #f6d3da 33% 67%, #fff3df 67% 87%, #1f64b4 87%),
+          linear-gradient(0deg, #ffffff 0 21%, transparent 21%),
+          linear-gradient(90deg, #c5161c 0 26%, #ff4861 26% 72%, #b10f17 72%),
+          #ffefe8;
+        background-size:
+          14px 14px,
+          18px 18px,
+          100% 100%,
+          100% 100%,
+          100% 100%,
+          auto;
+        clip-path: polygon(18% 0, 82% 0, 100% 36%, 90% 100%, 10% 100%, 0 36%);
+        box-shadow:
+          inset 0 -7px 0 #1f64b4,
+          -9px 34px 0 -9px #4a2919,
+          9px 34px 0 -9px #4a2919,
+          -9px 39px 0 -11px #171019,
+          9px 39px 0 -11px #171019;
+      }
+
+      .enemy.bishop {
+        --piece-color: #f7fbff;
+        --piece-head: #d9ebf5;
+        width: 94%;
+        height: 92%;
+        transform: translateY(-2%);
+      }
+
+      .enemy.bishop::before {
+        left: 18%;
+        right: 18%;
+        bottom: 6%;
+        height: 54%;
+        z-index: 4;
+        border: 4px solid #172033;
+        background:
+          radial-gradient(circle at 7px 6px, rgba(255, 255, 255, 0.82) 0 1.7px, transparent 2.1px),
+          radial-gradient(circle at 18px 15px, rgba(32, 113, 179, 0.36) 0 1.6px, transparent 2.1px),
+          linear-gradient(90deg, #1d6fb7 0 12%, #fff3df 12% 34%, #f8f1df 34% 66%, #fff3df 66% 88%, #1d6fb7 88%),
+          linear-gradient(0deg, #115087 0 22%, transparent 22%),
+          #fff3df;
+        background-size:
+          14px 14px,
+          18px 18px,
+          100% 100%,
+          100% 100%,
+          auto;
+        clip-path: polygon(14% 0, 86% 0, 100% 34%, 92% 100%, 8% 100%, 0 34%);
+        box-shadow:
+          inset 0 -7px 0 #145c99,
+          -10px 31px 0 -9px #f7fbff,
+          10px 31px 0 -9px #f7fbff,
+          -10px 36px 0 -11px #172033,
+          10px 36px 0 -11px #172033;
+      }
+
+      .enemy.knight {
+        --piece-color: #b46f36;
+        --piece-head: #e0aa62;
+        width: 98%;
+        height: 84%;
+        transform: translateY(4%);
+      }
+
+      .enemy.knight::before {
+        left: 20%;
+        right: 5%;
+        bottom: 14%;
+        height: 42%;
+        border: 4px solid #172033;
+        background:
+          radial-gradient(circle at 7px 6px, rgba(255, 255, 255, 0.82) 0 1.8px, transparent 2.2px),
+          radial-gradient(circle at 18px 14px, rgba(88, 42, 21, 0.3) 0 1.7px, transparent 2.2px),
+          linear-gradient(90deg, transparent 0 42%, #b9241e 42% 66%, #7f261d 66% 72%, transparent 72%),
+          linear-gradient(0deg, transparent 0 72%, #ffcf3b 72% 82%, transparent 82%),
+          linear-gradient(90deg, #7d4827 0 18%, #b46f36 18% 70%, #8c512b 70%),
+          #b46f36;
+        background-size:
+          16px 16px,
+          18px 18px,
+          100% 100%,
+          100% 100%,
+          100% 100%,
+          auto;
+        clip-path: polygon(0 28%, 17% 10%, 73% 8%, 100% 31%, 92% 76%, 75% 100%, 16% 100%, 0 76%);
+        box-shadow:
+          -5px 31px 0 -7px #9a5a2c,
+          -5px 36px 0 -9px #172033,
+          18px 32px 0 -7px #c88946,
+          18px 37px 0 -9px #172033,
+          46px 31px 0 -7px #9a5a2c,
+          46px 36px 0 -9px #172033;
+      }
+
+      .enemy.rook::after {
+        content: "";
+        left: 25%;
+        top: 21%;
+        width: 50%;
+        height: 31%;
+        z-index: 10;
+        display: block;
+        border: 4px solid #171019;
+        background:
+          radial-gradient(circle at 32% 45%, #111927 0 2px, transparent 2.5px),
+          radial-gradient(circle at 68% 45%, #111927 0 2px, transparent 2.5px),
+          linear-gradient(90deg, transparent 0 42%, #a22b2b 42% 58%, transparent 58%) 50% 76% / 13px 3px no-repeat,
+          radial-gradient(circle at 15% 65%, #ff9f9f 0 2.2px, transparent 2.7px),
+          radial-gradient(circle at 85% 65%, #ff9f9f 0 2.2px, transparent 2.7px),
+          radial-gradient(circle at 5px 5px, rgba(255, 255, 255, 0.58) 0 1.4px, transparent 1.8px),
+          #ffd2bd;
+        background-size:
+          100% 100%,
+          100% 100%,
+          100% 100%,
+          100% 100%,
+          100% 100%,
+          12px 12px,
+          auto;
+        clip-path: polygon(11% 12%, 50% 0, 89% 12%, 100% 45%, 84% 100%, 16% 100%, 0 45%);
+      }
+
+      .warrior-ribbon,
+      .warrior-hair,
+      .warrior-bun,
+      .warrior-headband,
+      .warrior-arm,
+      .warrior-sash,
+      .warrior-staff,
+      .warrior-flame,
+      .warrior-feet,
+      .warrior-gem {
+        position: absolute;
+        pointer-events: none;
+      }
+
+      .warrior-ribbon {
+        left: 1%;
+        right: 1%;
+        top: 32%;
+        height: 35%;
+        z-index: 3;
+        background:
+          radial-gradient(circle at 7px 7px, rgba(255, 214, 90, 0.72) 0 1.6px, transparent 2px),
+          linear-gradient(90deg, #d41418 0 24%, #ff3f25 24% 62%, #a70d15 62%);
+        background-size: 13px 13px, 100% 100%;
+        clip-path: polygon(0 58%, 20% 22%, 43% 41%, 68% 7%, 100% 34%, 89% 63%, 65% 54%, 44% 88%, 17% 75%);
+        filter: drop-shadow(2px 2px 0 #4a110b);
+      }
+
+      .warrior-hair {
+        left: 17%;
+        top: 7%;
+        width: 66%;
+        height: 25%;
+        z-index: 11;
+        background:
+          radial-gradient(circle at 18% 68%, #1f64b4 0 3px, transparent 3.5px),
+          radial-gradient(circle at 82% 68%, #1f64b4 0 3px, transparent 3.5px),
+          linear-gradient(90deg, #09080c 0 22%, #171019 22% 78%, #09080c 78%);
+        clip-path: polygon(5% 78%, 10% 28%, 28% 4%, 52% 0, 75% 6%, 92% 31%, 97% 79%, 77% 66%, 63% 86%, 49% 66%, 34% 86%, 21% 65%);
+        filter: drop-shadow(2px 2px 0 #030303);
+      }
+
+      .warrior-bun {
+        top: 11%;
+        width: 20%;
+        height: 21%;
+        z-index: 12;
+        background:
+          linear-gradient(0deg, #d41418 0 24%, transparent 24%),
+          radial-gradient(circle at 50% 58%, #1f64b4 0 3px, #09080c 3px 100%);
+        filter: drop-shadow(2px 2px 0 #030303);
+      }
+
+      .warrior-bun.left {
+        left: 8%;
+        clip-path: polygon(12% 22%, 82% 0, 100% 52%, 65% 100%, 0 80%);
+      }
+
+      .warrior-bun.right {
+        right: 8%;
+        clip-path: polygon(18% 0, 88% 22%, 100% 80%, 35% 100%, 0 52%);
+      }
+
+      .warrior-headband {
+        left: 23%;
+        top: 20%;
+        width: 54%;
+        height: 8%;
+        z-index: 13;
+        background:
+          radial-gradient(circle at 50% 50%, #ff4b20 0 3px, #ffd65a 3px 5px, transparent 5.4px),
+          linear-gradient(90deg, #ffd65a 0 100%);
+        box-shadow:
+          0 2px 0 #6b3c04,
+          0 -2px 0 rgba(255, 255, 255, 0.35);
+      }
+
+      .warrior-arm {
+        top: 50%;
+        width: 18%;
+        height: 22%;
+        z-index: 9;
+        border: 3px solid #171019;
+        background:
+          linear-gradient(90deg, #ffd2bd 0 35%, #fff3df 35% 70%, #1f64b4 70%);
+      }
+
+      .warrior-arm.left {
+        left: 9%;
+        clip-path: polygon(0 17%, 78% 0, 100% 72%, 30% 100%);
+      }
+
+      .warrior-arm.right {
+        right: 9%;
+        clip-path: polygon(22% 0, 100% 17%, 70% 100%, 0 72%);
+      }
+
+      .warrior-sash {
+        left: 30%;
+        top: 59%;
+        width: 41%;
+        height: 10%;
+        z-index: 14;
+        background:
+          radial-gradient(circle at 5px 5px, rgba(255, 255, 255, 0.8) 0 1.5px, transparent 2px),
+          linear-gradient(90deg, #1f64b4 0 22%, #ffd65a 22% 42%, #171019 42% 58%, #ffd65a 58% 78%, #1f64b4 78%);
+        background-size: 10px 10px, 100% 100%;
+        filter: drop-shadow(2px 2px 0 #171019);
+      }
+
+      .warrior-staff {
+        left: 6%;
+        top: 56%;
+        width: 72%;
+        height: 7px;
+        z-index: 15;
+        background:
+          linear-gradient(90deg, #ffd65a 0 12%, #171019 12% 72%, #1f64b4 72% 86%, #ffd65a 86%);
+        transform: rotate(-18deg);
+        transform-origin: left center;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45);
+      }
+
+      .warrior-flame {
+        right: -2%;
+        top: 38%;
+        width: 36%;
+        height: 31%;
+        z-index: 16;
+        background:
+          radial-gradient(circle at 35% 49%, #fff5a8 0 5px, transparent 5.5px),
+          radial-gradient(circle at 58% 40%, #ffd65a 0 6px, transparent 6.5px),
+          radial-gradient(circle at 46% 60%, #ff8a13 0 9px, transparent 9.5px),
+          linear-gradient(90deg, #ffef70 0 22%, #ff8a13 22% 63%, #ff2e17 63%);
+        clip-path: polygon(0 55%, 20% 23%, 33% 45%, 51% 0, 65% 41%, 100% 20%, 82% 58%, 100% 78%, 61% 100%, 35% 84%, 0 92%);
+        filter:
+          drop-shadow(2px 2px 0 #6b1b00)
+          drop-shadow(0 0 5px rgba(255, 138, 19, 0.9));
+      }
+
+      .warrior-feet {
+        left: 29%;
+        right: 27%;
+        bottom: 0;
+        height: 8px;
+        z-index: 16;
+        background:
+          linear-gradient(90deg, #4a2919 0 43%, transparent 43% 57%, #4a2919 57%);
+        box-shadow: 0 3px 0 #171019;
+      }
+
+      .warrior-gem {
+        left: 47%;
+        top: 54%;
+        width: 8%;
+        height: 9%;
+        z-index: 17;
+        background: #1f64b4;
+        box-shadow:
+          0 0 0 2px #ffd65a,
+          2px 2px 0 #171019;
+      }
+
+      .enemy.bishop::after {
+        content: "";
+        left: 18%;
+        top: 3%;
+        width: 64%;
+        height: 45%;
+        z-index: 8;
+        display: block;
+        border: 4px solid #172033;
+        background:
+          radial-gradient(circle at 34% 43%, #332143 0 2px, transparent 2.5px),
+          radial-gradient(circle at 66% 43%, #332143 0 2px, transparent 2.5px),
+          radial-gradient(circle at 31% 39%, #ffffff 0 0.9px, transparent 1.3px),
+          radial-gradient(circle at 63% 39%, #ffffff 0 0.9px, transparent 1.3px),
+          radial-gradient(circle at 50% 14%, #1e70c8 0 2.6px, #ffc93d 2.6px 5.5px, transparent 5.9px),
+          radial-gradient(circle at 8px 7px, rgba(255, 255, 255, 0.7) 0 1.5px, transparent 2px),
+          linear-gradient(90deg, #d7e7f2 0 24%, #f7fbff 24% 70%, #c9dce8 70%),
+          #edf5fa;
+        background-size:
+          100% 100%,
+          100% 100%,
+          100% 100%,
+          100% 100%,
+          100% 100%,
+          14px 14px,
+          100% 100%,
+          auto;
+        clip-path: polygon(17% 8%, 50% 0, 83% 8%, 100% 34%, 92% 74%, 70% 100%, 30% 100%, 8% 74%, 0 34%);
+      }
+
+      .elephant-ear,
+      .elephant-trunk,
+      .elephant-tusk,
+      .elephant-sash,
+      .elephant-trim,
+      .elephant-gem,
+      .elephant-arm,
+      .elephant-feet {
+        position: absolute;
+        pointer-events: none;
+      }
+
+      .elephant-ear {
+        top: 14%;
+        width: 25%;
+        height: 31%;
+        z-index: 6;
+        border: 4px solid #172033;
+        background:
+          radial-gradient(circle at 55% 48%, rgba(255, 255, 255, 0.62) 0 2px, transparent 2.5px),
+          linear-gradient(135deg, #d7e7f2 0 35%, #f7fbff 35% 65%, #b7cbd9 65%);
+      }
+
+      .elephant-ear.left {
+        left: 3%;
+        clip-path: polygon(100% 8%, 24% 0, 0 42%, 18% 100%, 100% 82%);
+      }
+
+      .elephant-ear.right {
+        right: 3%;
+        clip-path: polygon(0 8%, 76% 0, 100% 42%, 82% 100%, 0 82%);
+      }
+
+      .elephant-trunk {
+        left: 43%;
+        top: 35%;
+        width: 16%;
+        height: 38%;
+        z-index: 10;
+        border: 3px solid #172033;
+        background:
+          linear-gradient(0deg, rgba(23, 32, 51, 0.35) 0 10%, transparent 10% 25%, rgba(23, 32, 51, 0.28) 25% 35%, transparent 35% 52%, rgba(23, 32, 51, 0.24) 52% 63%, transparent 63%),
+          linear-gradient(90deg, #c9dce8 0 22%, #f7fbff 22% 70%, #b7cbd9 70%);
+        clip-path: polygon(21% 0, 79% 0, 100% 84%, 72% 100%, 28% 100%, 0 84%);
+      }
+
+      .elephant-tusk {
+        top: 45%;
+        width: 24%;
+        height: 28%;
+        z-index: 11;
+        background: #fff0bd;
+        filter: drop-shadow(2px 2px 0 #6d5120);
+      }
+
+      .elephant-tusk.left {
+        left: 26%;
+        clip-path: polygon(74% 0, 100% 16%, 42% 100%, 0 86%);
+      }
+
+      .elephant-tusk.right {
+        right: 24%;
+        clip-path: polygon(0 16%, 26% 0, 100% 86%, 58% 100%);
+      }
+
+      .elephant-sash {
+        left: 34%;
+        top: 54%;
+        width: 33%;
+        height: 11%;
+        z-index: 12;
+        background:
+          radial-gradient(circle at 5px 5px, rgba(255, 255, 255, 0.7) 0 1.5px, transparent 2px),
+          linear-gradient(90deg, #c88a12 0 28%, #ffd65a 28% 72%, #a86d06 72%);
+        background-size: 11px 11px, 100% 100%;
+        clip-path: polygon(8% 0, 92% 0, 100% 56%, 70% 100%, 30% 100%, 0 56%);
+        filter: drop-shadow(2px 2px 0 #6b3c04);
+      }
+
+      .elephant-trim {
+        left: 19%;
+        right: 19%;
+        bottom: 17%;
+        height: 8px;
+        z-index: 12;
+        background:
+          radial-gradient(circle at 4px 4px, #ffd65a 0 1.7px, transparent 2.1px),
+          linear-gradient(90deg, #145c99 0 18%, #fff3df 18% 30%, #145c99 30% 70%, #fff3df 70% 82%, #145c99 82%);
+        background-size: 10px 10px, 100% 100%;
+        box-shadow: 0 3px 0 #172033;
+      }
+
+      .elephant-gem {
+        left: 45%;
+        top: 0;
+        width: 12%;
+        height: 15%;
+        z-index: 12;
+        background:
+          radial-gradient(circle at 50% 52%, #1e70c8 0 3px, transparent 3.4px),
+          linear-gradient(90deg, transparent 0 18%, #ffd65a 18% 82%, transparent 82%);
+        filter: drop-shadow(1px 1px 0 #6b3c04);
+      }
+
+      .elephant-arm {
+        top: 49%;
+        width: 19%;
+        height: 23%;
+        z-index: 9;
+        border: 3px solid #172033;
+        background:
+          linear-gradient(90deg, #f7fbff 0 38%, #fff3df 38% 72%, #145c99 72%);
+      }
+
+      .elephant-arm.left {
+        left: 5%;
+        clip-path: polygon(0 13%, 78% 0, 100% 79%, 28% 100%);
+      }
+
+      .elephant-arm.right {
+        right: 5%;
+        clip-path: polygon(22% 0, 100% 13%, 72% 100%, 0 79%);
+      }
+
+      .elephant-feet {
+        left: 28%;
+        right: 28%;
+        bottom: 0;
+        height: 8px;
+        z-index: 13;
+        background:
+          linear-gradient(90deg, #f7fbff 0 42%, transparent 42% 58%, #f7fbff 58%);
+        box-shadow:
+          0 3px 0 #172033,
+          -4px -2px 0 -1px #fff0bd,
+          4px -2px 0 -1px #fff0bd;
+      }
+
+      .enemy.knight::after {
+        content: "";
+        left: 3%;
+        top: 7%;
+        width: 45%;
+        height: 49%;
+        display: block;
+        border: 4px solid #172033;
+        background:
+          radial-gradient(circle at 69% 42%, #172033 0 2.2px, transparent 2.6px),
+          radial-gradient(circle at 47% 76%, #172033 0 1.8px, transparent 2.2px),
+          linear-gradient(90deg, transparent 0 48%, #f28b22 48% 57%, transparent 57%),
+          linear-gradient(0deg, transparent 0 55%, #f28b22 55% 63%, transparent 63%),
+          radial-gradient(circle at 16px 5px, rgba(255, 255, 255, 0.82) 0 1.6px, transparent 2px),
+          radial-gradient(circle at 7px 16px, rgba(88, 42, 21, 0.34) 0 1.7px, transparent 2px),
+          linear-gradient(90deg, #7d4827 0 36%, #b46f36 36% 72%, #8c512b 72%),
+          #b46f36;
+        background-size:
+          100% 100%,
+          100% 100%,
+          100% 100%,
+          100% 100%,
+          14px 14px,
+          16px 16px,
+          100% 100%,
+          auto;
+        clip-path: polygon(0 31%, 22% 11%, 49% 7%, 76% 23%, 100% 43%, 91% 74%, 65% 95%, 22% 100%, 0 75%);
+        box-shadow:
+          7px -8px 0 -5px #c88946,
+          8px -11px 0 -6px #172033,
+          22px -7px 0 -5px #e0aa62,
+          23px -10px 0 -6px #172033,
+          0 0 0 0 transparent;
+      }
+
+      .horse-mane,
+      .horse-tail,
+      .horse-saddle,
+      .horse-satchel,
+      .horse-legs,
+      .horse-hooves,
+      .horse-ear,
+      .horse-bridle {
+        position: absolute;
+        pointer-events: none;
+      }
+
+      .horse-mane {
+        left: 22%;
+        top: 8%;
+        width: 18%;
+        height: 50%;
+        z-index: 8;
+        background:
+          radial-gradient(circle at 5px 5px, rgba(255, 255, 255, 0.86) 0 1.8px, transparent 2.2px),
+          linear-gradient(90deg, #4a2919 0 42%, #7a431f 42% 76%, #2f1a12 76%);
+        background-size: 12px 12px, 100% 100%;
+        clip-path: polygon(46% 0, 100% 13%, 76% 28%, 100% 43%, 71% 56%, 96% 73%, 60% 100%, 15% 91%, 31% 70%, 5% 54%, 28% 38%, 0 22%);
+        filter: drop-shadow(2px 2px 0 #172033);
+      }
+
+      .horse-tail {
+        right: 1%;
+        top: 42%;
+        width: 25%;
+        height: 26%;
+        z-index: 5;
+        background:
+          radial-gradient(circle at 6px 6px, rgba(255, 255, 255, 0.72) 0 1.6px, transparent 2px),
+          linear-gradient(90deg, #7a431f 0 35%, #4a2919 35% 72%, #2f1a12 72%);
+        background-size: 12px 12px, 100% 100%;
+        clip-path: polygon(0 11%, 45% 0, 100% 24%, 78% 56%, 100% 88%, 45% 100%, 0 69%);
+        filter: drop-shadow(2px 2px 0 #172033);
+      }
+
+      .horse-saddle {
+        left: 50%;
+        top: 39%;
+        width: 29%;
+        height: 22%;
+        z-index: 9;
+        border: 3px solid #7f261d;
+        background:
+          radial-gradient(circle at 5px 5px, rgba(255, 214, 90, 0.78) 0 1.5px, transparent 2px),
+          linear-gradient(90deg, #c72f25 0 45%, #e24b2a 45% 72%, #a9241d 72%);
+        background-size: 12px 12px, 100% 100%;
+        box-shadow: inset 0 4px 0 #ffcf3b;
+      }
+
+      .horse-satchel {
+        left: 66%;
+        top: 48%;
+        width: 16%;
+        height: 17%;
+        z-index: 10;
+        border: 3px solid #5c321e;
+        background:
+          linear-gradient(0deg, #8b5430 0 46%, #b06d3f 46%);
+        box-shadow:
+          inset 0 3px 0 rgba(255, 255, 255, 0.2),
+          2px 2px 0 rgba(0, 0, 0, 0.35);
+      }
+
+      .horse-legs {
+        left: 27%;
+        right: 14%;
+        bottom: 3%;
+        height: 31%;
+        z-index: 6;
+        background:
+          linear-gradient(90deg, #9a5a2c 0 12%, transparent 12% 31%, #c88946 31% 43%, transparent 43% 62%, #9a5a2c 62% 74%, transparent 74% 88%, #c88946 88%);
+        box-shadow:
+          0 3px 0 #172033,
+          0 -8px 0 -5px rgba(23, 32, 51, 0.45);
+      }
+
+      .horse-hooves {
+        left: 24%;
+        right: 10%;
+        bottom: 0;
+        height: 7px;
+        z-index: 11;
+        background:
+          linear-gradient(90deg, #2e2a31 0 11%, transparent 11% 31%, #2e2a31 31% 42%, transparent 42% 62%, #2e2a31 62% 73%, transparent 73% 88%, #2e2a31 88%);
+      }
+
+      .horse-ear {
+        left: 12%;
+        top: 0;
+        width: 24%;
+        height: 24%;
+        z-index: 9;
+        background:
+          linear-gradient(90deg, #b46f36 0 38%, #f0b18f 38% 56%, #7d4827 56%);
+        clip-path: polygon(16% 100%, 30% 0, 55% 48%, 78% 0, 100% 100%);
+        filter: drop-shadow(2px 2px 0 #172033);
+      }
+
+      .horse-bridle {
+        left: 8%;
+        top: 29%;
+        width: 36%;
+        height: 32%;
+        z-index: 12;
+        background:
+          linear-gradient(90deg, transparent 0 52%, #f28b22 52% 62%, transparent 62%),
+          linear-gradient(0deg, transparent 0 54%, #f28b22 54% 65%, transparent 65%);
+        filter: drop-shadow(1px 1px 0 #6b3c04);
+      }
+
+      .order-badge {
+        position: absolute;
+        top: 6%;
+        right: 6%;
+        z-index: 6;
+        width: 1.55em;
+        height: 1.55em;
+        display: grid;
+        place-items: center;
+        border: 2px solid var(--ink);
+        background: var(--gold);
+        color: var(--ink);
+        font-size: clamp(0.58rem, 1.6vw, 0.78rem);
+        font-weight: 900;
+        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.48);
+      }
+
+      .side {
+        display: grid;
+        gap: 12px;
+      }
+
+      .hud {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .stat,
+      .tool-panel {
+        border: 3px solid var(--ink);
+        background:
+          radial-gradient(circle at 4px 4px, rgba(255, 255, 255, 0.09) 0 1px, transparent 1.4px),
+          radial-gradient(circle at 12px 12px, rgba(255, 214, 90, 0.08) 0 1px, transparent 1.4px),
+          var(--panel);
+        background-size:
+          16px 16px,
+          20px 20px,
+          auto;
+        box-shadow:
+          inset 4px 4px 0 rgba(255, 255, 255, 0.08),
+          inset -4px -4px 0 rgba(0, 0, 0, 0.24),
+          5px 5px 0 var(--pixel-shadow);
+      }
+
+      .stat {
+        min-height: 78px;
+        padding: 12px;
+      }
+
+      .stat-label {
+        color: var(--muted);
+        font-size: 0.7rem;
+        line-height: 1.25;
+        text-transform: uppercase;
+      }
+
+      .stat-value {
+        margin-top: 9px;
+        color: var(--gold);
+        font-size: clamp(1.35rem, 3vw, 2rem);
+        line-height: 1;
+        text-shadow:
+          2px 0 0 var(--ink),
+          0 2px 0 var(--ink),
+          2px 2px 0 var(--ink);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .tool-panel {
+        padding: 12px;
+      }
+
+      .panel-title {
+        margin-bottom: 10px;
+        color: var(--muted);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+      }
+
+      .btn,
+      .seg-btn,
+      .input {
+        min-height: 42px;
+        border: 3px solid var(--ink);
+        border-radius: 0;
+        color: var(--cream);
+        background:
+          radial-gradient(circle at 4px 4px, rgba(255, 255, 255, 0.14) 0 1px, transparent 1.4px),
+          radial-gradient(circle at 11px 12px, rgba(0, 0, 0, 0.18) 0 1px, transparent 1.4px),
+          var(--panel-strong);
+        background-size:
+          14px 14px,
+          16px 16px,
+          auto;
+        box-shadow:
+          inset 3px 3px 0 rgba(255, 255, 255, 0.08),
+          inset -3px -3px 0 rgba(0, 0, 0, 0.22),
+          0 5px 0 var(--pixel-shadow);
+      }
+
+      a.btn {
+        text-decoration: none;
+      }
+
+      .btn,
+      .seg-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45em;
+        padding: 10px 12px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .btn:hover,
+      .seg-btn:hover {
+        color: #ffffff;
+        background:
+          radial-gradient(circle at 4px 4px, rgba(255, 255, 255, 0.18) 0 1px, transparent 1.4px),
+          radial-gradient(circle at 11px 12px, rgba(0, 0, 0, 0.18) 0 1px, transparent 1.4px),
+          #2b5630;
+        background-size:
+          14px 14px,
+          16px 16px,
+          auto;
+      }
+
+      .btn:active,
+      .seg-btn:active {
+        transform: translateY(3px);
+        box-shadow:
+          inset 3px 3px 0 rgba(0, 0, 0, 0.22),
+          0 2px 0 var(--pixel-shadow);
+      }
+
+      .btn.primary {
+        background:
+          radial-gradient(circle at 4px 4px, rgba(255, 255, 255, 0.16) 0 1px, transparent 1.4px),
+          radial-gradient(circle at 12px 11px, rgba(0, 0, 0, 0.22) 0 1px, transparent 1.4px),
+          #963049;
+        background-size:
+          14px 14px,
+          16px 16px,
+          auto;
+      }
+
+      .seg {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .seg-btn.active {
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 4px 4px, rgba(255, 255, 255, 0.44) 0 1px, transparent 1.4px),
+          radial-gradient(circle at 12px 11px, rgba(101, 58, 11, 0.25) 0 1px, transparent 1.4px),
+          var(--gold);
+        background-size:
+          12px 12px,
+          16px 16px,
+          auto;
+        border-color: var(--gold);
+        box-shadow:
+          inset 3px 3px 0 rgba(255, 255, 255, 0.2),
+          inset -3px -3px 0 rgba(0, 0, 0, 0.18),
+          0 5px 0 var(--pixel-shadow);
+      }
+
+      .input-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+      }
+
+      .input {
+        width: 100%;
+        padding: 0 12px;
+        outline: none;
+      }
+
+      .input:focus {
+        border-color: var(--cyan);
+      }
+
+      .log {
+        min-height: 4.2em;
+        color: var(--cream);
+        font-size: 0.82rem;
+        line-height: 1.55;
+      }
+
+      .piece-key {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .key-item {
+        display: grid;
+        gap: 7px;
+        justify-items: center;
+        padding: 10px 6px;
+        border: 3px solid #0a190d;
+        background:
+          radial-gradient(circle at 4px 4px, rgba(255, 255, 255, 0.08) 0 1px, transparent 1.4px),
+          radial-gradient(circle at 13px 12px, rgba(98, 214, 255, 0.08) 0 1px, transparent 1.4px),
+          #0f2114;
+        background-size:
+          14px 14px,
+          18px 18px,
+          auto;
+        box-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.24);
+      }
+
+      .key-glyph {
+        display: grid;
+        place-items: center;
+        width: 58px;
+        height: 48px;
+        border: 3px solid var(--ink);
+        color: #fff;
+        text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.52);
+        font-size: 1.35rem;
+        overflow: visible;
+        background:
+          radial-gradient(circle at 5px 5px, rgba(255, 255, 255, 0.2) 0 1.3px, transparent 1.8px),
+          radial-gradient(circle at 14px 13px, rgba(255, 214, 90, 0.22) 0 1.2px, transparent 1.7px),
+          linear-gradient(135deg, #07512f 0 50%, #10a95c 50% 100%);
+        background-size:
+          14px 14px,
+          18px 18px,
+          100% 100%;
+        box-shadow: 3px 3px 0 var(--pixel-shadow);
+      }
+
+      .key-glyph .legend-sprite {
+        width: 92%;
+        height: 94%;
+        transform: translateY(0);
+        filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.52));
+      }
+
+      .key-glyph .legend-sprite.enemy.rook {
+        width: 94%;
+        height: 98%;
+      }
+
+      .key-glyph .legend-sprite.enemy.knight {
+        width: 106%;
+        height: 86%;
+      }
+
+      .key-glyph .legend-sprite.enemy.bishop {
+        width: 98%;
+        height: 98%;
+      }
+
+      .key-label {
+        color: var(--muted);
+        font-size: 0.68rem;
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        z-index: 30;
+        display: none;
+        place-items: center;
+        padding: 18px;
+        background:
+          linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          linear-gradient(0deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+          rgba(7, 16, 7, 0.9);
+        background-size:
+          12px 12px,
+          12px 12px,
+          auto;
+      }
+
+      .modal.open {
+        display: grid;
+      }
+
+      .modal-panel {
+        width: min(420px, 100%);
+        max-height: calc(100dvh - 36px);
+        overflow: auto;
+        padding: 22px;
+        border: 4px solid var(--ink);
+        border-radius: 0;
+        background:
+          radial-gradient(circle at 4px 4px, rgba(255, 255, 255, 0.1) 0 1px, transparent 1.4px),
+          radial-gradient(circle at 13px 12px, rgba(255, 214, 90, 0.08) 0 1px, transparent 1.4px),
+          var(--panel);
+        background-size:
+          16px 16px,
+          20px 20px,
+          auto;
+        box-shadow:
+          inset 5px 5px 0 rgba(255, 255, 255, 0.08),
+          inset -5px -5px 0 rgba(0, 0, 0, 0.24),
+          10px 10px 0 var(--pixel-shadow);
+      }
+
+      .modal h2 {
+        margin: 0 0 14px;
+        color: var(--rose);
+        font-size: 1.35rem;
+        line-height: 1.25;
+        text-shadow:
+          2px 0 0 var(--ink),
+          0 2px 0 var(--ink),
+          2px 2px 0 var(--ink);
+      }
+
+      .modal p {
+        margin: 0 0 12px;
+        color: var(--cream);
+        font-family:
+          system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.65;
+      }
+
+      .share-status {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .share-status:empty {
+        display: none;
+      }
+
+      .move-guide {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin: 12px 0 14px;
+      }
+
+      .move-card {
+        min-width: 0;
+        padding: 8px;
+        border: 2px solid rgba(220, 255, 214, 0.22);
+        background:
+          radial-gradient(circle at 4px 4px, rgba(255, 255, 255, 0.08) 0 1px, transparent 1.4px),
+          rgba(6, 30, 14, 0.72);
+        background-size:
+          12px 12px,
+          auto;
+      }
+
+      .move-mini {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1;
+        border: 2px solid rgba(220, 255, 214, 0.25);
+        background:
+          repeating-conic-gradient(from 45deg, rgba(255, 255, 255, 0.08) 0 25%, transparent 0 50%) 0 0 / 40% 40%,
+          #17351f;
+        image-rendering: pixelated;
+      }
+
+      .move-mini::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--move-dots);
+      }
+
+      .rook-pattern {
+        --move-dots:
+          radial-gradient(circle at 50% 10%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 50% 30%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 50% 70%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 50% 90%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 10% 50%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 30% 50%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 70% 50%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 90% 50%, #d9f2de 0 4px, transparent 4.5px);
+      }
+
+      .knight-pattern {
+        --move-dots:
+          radial-gradient(circle at 30% 10%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 70% 10%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 10% 30%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 90% 30%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 10% 70%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 90% 70%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 30% 90%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 70% 90%, #d9f2de 0 4px, transparent 4.5px);
+      }
+
+      .bishop-pattern {
+        --move-dots:
+          radial-gradient(circle at 10% 10%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 30% 30%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 70% 70%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 90% 90%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 90% 10%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 70% 30%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 30% 70%, #d9f2de 0 4px, transparent 4.5px),
+          radial-gradient(circle at 10% 90%, #d9f2de 0 4px, transparent 4.5px);
+      }
+
+      .move-center {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        z-index: 1;
+        display: grid;
+        width: 1.65em;
+        height: 1.65em;
+        place-items: center;
+        border: 2px solid var(--ink);
+        color: #ffffff;
+        background: #2f83d8;
+        font-size: clamp(0.86rem, 2.4vw, 1.1rem);
+        font-weight: 900;
+        line-height: 1;
+        transform: translate(-50%, -50%);
+        text-shadow:
+          1px 0 0 var(--ink),
+          0 1px 0 var(--ink),
+          1px 1px 0 var(--ink);
+      }
+
+      .move-card:nth-child(1) .move-center {
+        background: #e83b79;
+      }
+
+      .move-card:nth-child(2) .move-center {
+        background: #b46f36;
+      }
+
+      .move-name {
+        margin-top: 7px;
+        color: var(--gold);
+        font-size: 0.74rem;
+        line-height: 1.2;
+        text-align: center;
+      }
+
+      .move-desc {
+        margin-top: 4px;
+        color: var(--muted);
+        font-family:
+          system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 0.66rem;
+        line-height: 1.35;
+        text-align: center;
+      }
+
+      .move-note {
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .game-over-actions {
+        flex-wrap: wrap;
+      }
+
+      .game-over-actions .btn {
+        min-width: 118px;
+      }
+
+      .share-btn {
+        background:
+          radial-gradient(circle at 4px 4px, rgba(255, 255, 255, 0.14) 0 1px, transparent 1.4px),
+          radial-gradient(circle at 11px 12px, rgba(0, 0, 0, 0.18) 0 1px, transparent 1.4px),
+          #2c6137;
+      }
+
+      .modal-actions .btn {
+        flex: 1 1 0;
+      }
+
+      @keyframes pop {
+        0% {
+          transform: scale(0.94);
+          opacity: 0;
+        }
+      }
+
+      .sprite.spawn {
+        animation: pop 180ms ease-out both;
+      }
+
+      .tile.flash {
+        animation: flash 320ms ease-out, tileShake 320ms steps(2, end);
+        z-index: 5;
+      }
+
+      @keyframes flash {
+        50% {
+          filter: brightness(1.45);
+        }
+      }
+
+      .board.capture-shake {
+        animation: boardShake 340ms steps(2, end);
+      }
+
+      @keyframes boardShake {
+        0%,
+        100% {
+          transform: translate(0, 0);
+        }
+        18% {
+          transform: translate(-5px, 0);
+        }
+        36% {
+          transform: translate(5px, -3px);
+        }
+        54% {
+          transform: translate(-4px, 3px);
+        }
+        72% {
+          transform: translate(3px, 0);
+        }
+      }
+
+      @keyframes tileShake {
+        0%,
+        100% {
+          transform: translate(0, 0);
+        }
+        25% {
+          transform: translate(-3px, 0);
+        }
+        50% {
+          transform: translate(3px, -2px);
+        }
+        75% {
+          transform: translate(-2px, 2px);
+        }
+      }
+
+      @media (max-width: 920px) {
+        .topbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .game-shell {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .board-wrap {
+          max-width: min(92vw, 70vh);
+        }
+
+        .side {
+          width: min(92vw, 760px);
+          margin: 0 auto;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .app {
+          padding: 10px;
+        }
+
+        .hud {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .stat {
+          min-height: 64px;
+          padding: 9px 7px;
+        }
+
+        .stat-label {
+          font-size: 0.58rem;
+        }
+
+        .stat-value {
+          font-size: 1.1rem;
+        }
+
+        .controls,
+        .top-actions {
+          width: 100%;
+        }
+
+        .controls .btn,
+        .top-actions .btn {
+          flex: 1 1 0;
+        }
+
+        .piece-key {
+          grid-template-columns: repeat(3, 1fr);
+        }
+
+        .move-guide {
+          gap: 7px;
+        }
+
+        .move-card {
+          padding: 6px;
+        }
+
+        .move-name {
+          font-size: 0.68rem;
+        }
+
+        .move-desc {
+          font-size: 0.6rem;
+        }
+
+        .enemy::after {
+          font-size: clamp(13px, 6vw, 22px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <h1>唐僧棋阵</h1>
+          <div id="seedLabel" class="seed"></div>
+        </div>
+        <div class="top-actions">
+          <a class="btn" href="tutorial.html">返回教程</a>
+          <button id="dailyBtn" class="btn" type="button">日局</button>
+          <button id="newBtn" class="btn primary" type="button">新棋盘</button>
+          <button id="helpBtn" class="btn" type="button" aria-label="帮助">?</button>
+        </div>
+      </header>
+
+      <main class="game-shell">
+        <section class="board-wrap" aria-label="游戏棋盘">
+          <div id="board" class="board"></div>
+        </section>
+
+        <aside class="side">
+          <section class="hud" aria-label="统计">
+            <div class="stat">
+              <div class="stat-label">分数</div>
+              <div id="scoreVal" class="stat-value">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">步数</div>
+              <div id="moveVal" class="stat-value">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">敌人</div>
+              <div id="enemyVal" class="stat-value">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">最佳</div>
+              <div id="bestVal" class="stat-value">0</div>
+            </div>
+          </section>
+
+          <section class="tool-panel">
+            <div class="panel-title">操作</div>
+            <div class="controls">
+              <button id="restartBtn" class="btn" type="button">重开</button>
+              <button id="stoneBtn" class="btn" type="button">随机石阵</button>
+              <button id="threatBtn" class="btn" type="button">威胁: 关</button>
+              <button id="scoutBtn" class="btn" type="button">顺序</button>
+            </div>
+          </section>
+
+          <section class="tool-panel">
+            <div class="panel-title">棋盘尺寸</div>
+            <div id="sizeSeg" class="seg">
+              <button class="seg-btn" type="button" data-size="8">8x8</button>
+              <button class="seg-btn" type="button" data-size="10">10x10</button>
+              <button class="seg-btn" type="button" data-size="12">12x12</button>
+            </div>
+          </section>
+
+          <section class="tool-panel">
+            <div class="panel-title">种子</div>
+            <div class="input-row">
+              <input id="seedInput" class="input" maxlength="24" spellcheck="false" />
+              <button id="seedBtn" class="btn" type="button">载入</button>
+            </div>
+          </section>
+
+          <section class="tool-panel">
+            <div class="panel-title">敌方棋子</div>
+            <div class="piece-key" aria-hidden="true">
+              <div class="key-item">
+                <div class="key-glyph rook" data-piece="rook"></div>
+                <div class="key-label">车</div>
+              </div>
+              <div class="key-item">
+                <div class="key-glyph knight" data-piece="knight"></div>
+                <div class="key-label">棕马</div>
+              </div>
+              <div class="key-item">
+                <div class="key-glyph bishop" data-piece="bishop"></div>
+                <div class="key-label">象</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="tool-panel">
+            <div class="panel-title">状态</div>
+            <div id="log" class="log"></div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <div id="gameOver" class="modal" role="dialog" aria-modal="true" aria-labelledby="gameOverTitle">
+      <div class="modal-panel">
+        <h2 id="gameOverTitle">游戏结束</h2>
+        <p id="gameOverText"></p>
+        <p id="shareStatus" class="share-status" aria-live="polite"></p>
+        <div class="modal-actions game-over-actions">
+          <button id="againBtn" class="btn primary" type="button">再来一局</button>
+          <button id="shareBtn" class="btn share-btn" type="button">分享微信</button>
+          <button id="closeOverBtn" class="btn" type="button">查看棋盘</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="helpModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <div class="modal-panel">
+        <h2 id="helpTitle">玩法</h2>
+        <p>你控制唐僧，像国际象棋里的后一样沿横、竖、斜线移动。落到敌人所在格即可捕获并得分。</p>
+        <p>每次捕获会召来两个新敌人。敌人按车、马、象的棋路追击；如果敌人移动到你的格子，游戏结束。</p>
+        <div class="move-guide" aria-label="车马象对应可下位置">
+          <div class="move-card">
+            <div class="move-mini rook-pattern" aria-hidden="true"><span class="move-center">车</span></div>
+            <div class="move-name">车</div>
+            <div class="move-desc">下到同一行或同一列的白点位置</div>
+          </div>
+          <div class="move-card">
+            <div class="move-mini knight-pattern" aria-hidden="true"><span class="move-center">马</span></div>
+            <div class="move-name">马</div>
+            <div class="move-desc">下到日字形的八个白点位置</div>
+          </div>
+          <div class="move-card">
+            <div class="move-mini bishop-pattern" aria-hidden="true"><span class="move-center">象</span></div>
+            <div class="move-name">象</div>
+            <div class="move-desc">下到斜线方向的白点位置</div>
+          </div>
+        </div>
+        <p class="move-note">图中白点代表该棋子下一步可以落下的位置，石头会挡住车和象的直线棋路。</p>
+        <p>打开威胁显示可以预判危险格。“随机石阵”会重排石头并重开当前局。</p>
+        <div class="modal-actions">
+          <button id="closeHelpBtn" class="btn primary" type="button">开始</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const DIRS_QUEEN = [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+        [1, 1],
+        [1, -1],
+        [-1, 1],
+        [-1, -1],
+      ];
+      const DIRS_ROOK = [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ];
+      const DIRS_BISHOP = [
+        [1, 1],
+        [1, -1],
+        [-1, 1],
+        [-1, -1],
+      ];
+      const DIRS_KNIGHT = [
+        [1, 2],
+        [2, 1],
+        [-1, 2],
+        [-2, 1],
+        [1, -2],
+        [2, -1],
+        [-1, -2],
+        [-2, -1],
+      ];
+      const PIECES = ["rook", "knight", "bishop"];
+      const PIECE_LABEL = { rook: "车", knight: "棕马", bishop: "象" };
+
+      const els = {
+        board: document.getElementById("board"),
+        seedLabel: document.getElementById("seedLabel"),
+        seedInput: document.getElementById("seedInput"),
+        scoreVal: document.getElementById("scoreVal"),
+        moveVal: document.getElementById("moveVal"),
+        enemyVal: document.getElementById("enemyVal"),
+        bestVal: document.getElementById("bestVal"),
+        log: document.getElementById("log"),
+        threatBtn: document.getElementById("threatBtn"),
+        scoutBtn: document.getElementById("scoutBtn"),
+        gameOver: document.getElementById("gameOver"),
+        gameOverText: document.getElementById("gameOverText"),
+        shareStatus: document.getElementById("shareStatus"),
+        helpModal: document.getElementById("helpModal"),
+      };
+
+      const state = {
+        size: Number(localStorage.getItem("crownRun:size")) || 8,
+        seed: "",
+        stoneSeed: "",
+        rng: Math.random,
+        board: [],
+        player: { x: 0, y: 0 },
+        enemies: [],
+        nextEnemyId: 1,
+        score: 0,
+        moves: 0,
+        alive: true,
+        showThreats: localStorage.getItem("crownRun:threats") === "true",
+        scoutUntil: 0,
+        lastCapture: null,
+        lastDeath: null,
+      };
+
+      const audioState = {
+        ctx: null,
+      };
+
+      function hashString(text) {
+        let h = 2166136261;
+        for (let i = 0; i < text.length; i++) {
+          h ^= text.charCodeAt(i);
+          h = Math.imul(h, 16777619);
+        }
+        return h >>> 0;
+      }
+
+      function mulberry32(seed) {
+        let t = seed >>> 0;
+        return function () {
+          t += 0x6d2b79f5;
+          let r = Math.imul(t ^ (t >>> 15), 1 | t);
+          r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+          return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      function todaySeed() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      }
+
+      function randomSeed() {
+        return Math.floor(Math.random() * 0xffffff)
+          .toString(16)
+          .padStart(6, "0");
+      }
+
+      function inBounds(x, y) {
+        return x >= 0 && y >= 0 && x < state.size && y < state.size;
+      }
+
+      function cellKey(x, y) {
+        return `${x},${y}`;
+      }
+
+      function isWall(x, y) {
+        return state.board[y]?.[x] === 1;
+      }
+
+      function enemyAt(x, y, list = state.enemies) {
+        return list.find((enemy) => enemy.x === x && enemy.y === y) || null;
+      }
+
+      function isPlayerAt(x, y) {
+        return state.player.x === x && state.player.y === y;
+      }
+
+      function bestKey() {
+        return `crownRun:best:${state.size}:${state.seed}:${state.stoneSeed || state.seed}`;
+      }
+
+      function getBest() {
+        return Number(localStorage.getItem(bestKey()) || "0");
+      }
+
+      function setBest(score) {
+        if (score > getBest()) localStorage.setItem(bestKey(), String(score));
+      }
+
+      function protectedCells(size) {
+        const start = [
+          [0, 0],
+          [1, 0],
+          [0, 1],
+          [1, 1],
+          [2, 1],
+          [1, 2],
+          [2, 2],
+        ];
+        const e = Math.min(3, size - 2);
+        start.push([e, e], [e - 1, e], [e, e - 1], [e + 1, e], [e, e + 1]);
+        return new Set(start.filter(([x, y]) => x >= 0 && y >= 0 && x < size && y < size).map(([x, y]) => cellKey(x, y)));
+      }
+
+      function allOpenConnected(board, size) {
+        let start = null;
+        let open = 0;
+        for (let y = 0; y < size; y++) {
+          for (let x = 0; x < size; x++) {
+            if (board[y][x] === 0) {
+              open++;
+              if (!start) start = [x, y];
+            }
+          }
+        }
+        if (!start) return false;
+        const seen = new Set([cellKey(start[0], start[1])]);
+        const stack = [start];
+        while (stack.length) {
+          const [x, y] = stack.pop();
+          for (const [dx, dy] of DIRS_ROOK) {
+            const nx = x + dx;
+            const ny = y + dy;
+            const key = cellKey(nx, ny);
+            if (!inBoard(nx, ny, size) || board[ny][nx] === 1 || seen.has(key)) continue;
+            seen.add(key);
+            stack.push([nx, ny]);
+          }
+        }
+        return seen.size === open;
+      }
+
+      function inBoard(x, y, size) {
+        return x >= 0 && y >= 0 && x < size && y < size;
+      }
+
+      function generateBoard(size, seed) {
+        const rng = mulberry32(hashString(`board:${seed}:${size}`));
+        const board = Array.from({ length: size }, () => Array(size).fill(0));
+        const safe = protectedCells(size);
+        const density = size === 8 ? 0.28 : size === 10 ? 0.31 : 0.34;
+        const target = Math.round(size * size * density);
+        let placed = 0;
+        let attempts = 0;
+        while (placed < target && attempts < size * size * 30) {
+          attempts++;
+          const x = Math.floor(rng() * size);
+          const y = Math.floor(rng() * size);
+          if (safe.has(cellKey(x, y)) || board[y][x] === 1) continue;
+          board[y][x] = 1;
+          if (!allOpenConnected(board, size) || createsHeavyBlock(board, x, y, size)) {
+            board[y][x] = 0;
+            continue;
+          }
+          placed++;
+        }
+        return board;
+      }
+
+      function createsHeavyBlock(board, x, y, size) {
+        for (let sy = Math.max(0, y - 1); sy <= Math.min(size - 2, y); sy++) {
+          for (let sx = Math.max(0, x - 1); sx <= Math.min(size - 2, x); sx++) {
+            let count = 0;
+            for (let yy = sy; yy < sy + 2; yy++) {
+              for (let xx = sx; xx < sx + 2; xx++) count += board[yy][xx];
+            }
+            if (count === 4) return true;
+          }
+        }
+        return false;
+      }
+
+      function resetGame(seed = state.seed || todaySeed(), stoneSeed = seed) {
+        state.seed = String(seed).trim() || todaySeed();
+        state.stoneSeed = String(stoneSeed || state.seed).trim() || state.seed;
+        state.rng = mulberry32(hashString(`run:${state.seed}:${state.stoneSeed}:${state.size}`));
+        state.board = generateBoard(state.size, state.stoneSeed);
+        state.player = { x: 0, y: 0 };
+        state.enemies = [];
+        state.nextEnemyId = 1;
+        state.score = 0;
+        state.moves = 0;
+        state.alive = true;
+        state.scoutUntil = 0;
+        state.lastCapture = null;
+        state.lastDeath = null;
+        els.shareStatus.textContent = "";
+        const start = Math.min(3, state.size - 2);
+        addEnemy(start, start, "knight");
+        moveEnemies(true);
+        writeLog("唐僧已经入阵。选择高亮格移动。");
+        closeModal(els.gameOver);
+        render();
+      }
+
+      function randomizeStones() {
+        resetGame(state.seed || todaySeed(), `stone-${randomSeed()}`);
+        writeLog("石头阵列已经随机更换。选择高亮格移动。");
+      }
+
+      function addEnemy(x, y, piece) {
+        const enemy = { id: state.nextEnemyId++, x, y, piece };
+        state.enemies.push(enemy);
+        return enemy;
+      }
+
+      function choosePiece() {
+        const counts = Object.fromEntries(PIECES.map((p) => [p, 0]));
+        for (const enemy of state.enemies) counts[enemy.piece]++;
+        const lowest = Math.min(...PIECES.map((p) => counts[p]));
+        const pool = PIECES.filter((p) => counts[p] === lowest);
+        return pool[Math.floor(state.rng() * pool.length)];
+      }
+
+      function pieceMoves(x, y, piece, options = {}) {
+        const moves = [];
+        const moveMode = options.moveMode === true;
+        const enemies = options.enemies || state.enemies;
+        const ignoreId = options.ignoreId ?? null;
+        const occupied = (cx, cy) => {
+          const found = enemies.find((enemy) => enemy.id !== ignoreId && enemy.x === cx && enemy.y === cy);
+          return found || null;
+        };
+        if (piece === "knight") {
+          for (const [dx, dy] of DIRS_KNIGHT) {
+            const nx = x + dx;
+            const ny = y + dy;
+            if (!inBounds(nx, ny) || isWall(nx, ny)) continue;
+            if (moveMode && occupied(nx, ny) && !isPlayerAt(nx, ny)) continue;
+            moves.push({ x: nx, y: ny });
+          }
+          return moves;
+        }
+        const dirs = piece === "rook" ? DIRS_ROOK : piece === "bishop" ? DIRS_BISHOP : DIRS_QUEEN;
+        for (const [dx, dy] of dirs) {
+          let nx = x + dx;
+          let ny = y + dy;
+          while (inBounds(nx, ny) && !isWall(nx, ny)) {
+            const hitEnemy = occupied(nx, ny);
+            if (moveMode && hitEnemy && !isPlayerAt(nx, ny)) break;
+            moves.push({ x: nx, y: ny });
+            if (hitEnemy) break;
+            nx += dx;
+            ny += dy;
+          }
+        }
+        return moves;
+      }
+
+      function legalPlayerMoves() {
+        const moves = [];
+        for (const [dx, dy] of DIRS_QUEEN) {
+          let x = state.player.x + dx;
+          let y = state.player.y + dy;
+          while (inBounds(x, y) && !isWall(x, y)) {
+            const enemy = enemyAt(x, y);
+            moves.push({ x, y, capture: Boolean(enemy) });
+            if (enemy) break;
+            x += dx;
+            y += dy;
+          }
+        }
+        return moves;
+      }
+
+      function dangerTiles() {
+        const danger = new Set();
+        for (const enemy of state.enemies) {
+          const moves = pieceMoves(enemy.x, enemy.y, enemy.piece, { ignoreId: enemy.id });
+          for (const move of moves) danger.add(cellKey(move.x, move.y));
+        }
+        return danger;
+      }
+
+      function takePlayerMove(x, y) {
+        if (!state.alive) return resetGame();
+        const legal = legalPlayerMoves().find((move) => move.x === x && move.y === y);
+        if (!legal) return;
+        state.moves++;
+        state.player = { x, y };
+        const captured = enemyAt(x, y);
+        const capturedPiece = Boolean(captured);
+        if (captured) {
+          state.lastCapture = { x, y };
+          state.score++;
+          state.enemies = state.enemies.filter((enemy) => enemy.id !== captured.id);
+          writeLog(`捕获${PIECE_LABEL[captured.piece]}，敌阵开始重组。`);
+        } else {
+          state.lastCapture = null;
+          writeLog("唐僧前行，敌人逼近。");
+        }
+        playMoveCue(capturedPiece ? "capture" : "move");
+        const death = moveEnemies(false);
+        if (death) {
+          state.alive = false;
+          state.lastDeath = { x: state.player.x, y: state.player.y };
+          render();
+          if (capturedPiece) triggerCaptureFeedback();
+          finishGame(death);
+          return;
+        }
+        if (captured) {
+          spawnEnemies(2);
+          if (isBoardFull()) {
+            const bonus = state.enemies.length;
+            state.score += bonus;
+            state.enemies = [];
+            spawnEnemies(2);
+            writeLog(`棋盘清场奖励 +${bonus}。`);
+          }
+        }
+        render();
+        if (capturedPiece) triggerCaptureFeedback();
+      }
+
+      function moveEnemies(opening) {
+        for (const enemy of state.enemies) {
+          const target = chooseEnemyStep(enemy);
+          if (!target) continue;
+          enemy.x = target.x;
+          enemy.y = target.y;
+          if (isPlayerAt(enemy.x, enemy.y)) {
+            if (!opening) return enemy;
+          }
+        }
+        return null;
+      }
+
+      function chooseEnemyStep(enemy) {
+        const moves = pieceMoves(enemy.x, enemy.y, enemy.piece, {
+          moveMode: true,
+          ignoreId: enemy.id,
+        });
+        if (!moves.length) return null;
+        const direct = moves.find((move) => isPlayerAt(move.x, move.y));
+        if (direct) return direct;
+        const px = state.player.x;
+        const py = state.player.y;
+        let best = null;
+        let bestScore = Infinity;
+        for (const move of moves) {
+          const cheb = Math.max(Math.abs(move.x - px), Math.abs(move.y - py));
+          const man = Math.abs(move.x - px) + Math.abs(move.y - py);
+          const score = cheb * 12 + man + state.rng() * 0.35;
+          if (score < bestScore) {
+            bestScore = score;
+            best = move;
+          }
+        }
+        return best;
+      }
+
+      function spawnEnemies(count) {
+        for (let i = 0; i < count; i++) {
+          let placed = false;
+          for (let attempt = 0; attempt < 360; attempt++) {
+            const x = Math.floor(state.rng() * state.size);
+            const y = Math.floor(state.rng() * state.size);
+            const minDist = attempt < 160 ? 2 : 1;
+            if (!isEmptyCell(x, y)) continue;
+            if (Math.max(Math.abs(x - state.player.x), Math.abs(y - state.player.y)) < minDist) continue;
+            addEnemy(x, y, choosePiece());
+            placed = true;
+            break;
+          }
+          if (!placed) {
+            const cells = [];
+            for (let y = 0; y < state.size; y++) {
+              for (let x = 0; x < state.size; x++) if (isEmptyCell(x, y)) cells.push([x, y]);
+            }
+            if (!cells.length) return;
+            const [x, y] = cells[Math.floor(state.rng() * cells.length)];
+            addEnemy(x, y, choosePiece());
+          }
+        }
+      }
+
+      function isEmptyCell(x, y) {
+        return inBounds(x, y) && !isWall(x, y) && !isPlayerAt(x, y) && !enemyAt(x, y);
+      }
+
+      function isBoardFull() {
+        for (let y = 0; y < state.size; y++) {
+          for (let x = 0; x < state.size; x++) {
+            if (isEmptyCell(x, y)) return false;
+          }
+        }
+        return true;
+      }
+
+      function finishGame(killer) {
+        setBest(state.score);
+        const label = killer ? PIECE_LABEL[killer.piece] : "敌人";
+        els.gameOverText.textContent = `你捕获了 ${state.score} 个敌人，用了 ${state.moves} 步。最后被${label}拦住了取经路。`;
+        els.shareStatus.textContent = "";
+        openModal(els.gameOver);
+        writeLog("取经失败。重开可以继续挑战这个种子。");
+      }
+
+      function shareGameUrl() {
+        const url = new URL(window.location.href);
+        url.hash = "";
+        url.searchParams.set("seed", state.seed);
+        url.searchParams.set("stone", state.stoneSeed || state.seed);
+        url.searchParams.set("size", String(state.size));
+        return url.href;
+      }
+
+      function shareGameText() {
+        const stoneText = state.stoneSeed && state.stoneSeed !== state.seed ? `，石阵 ${state.stoneSeed}` : "";
+        return `我在《唐僧棋阵》捕获了 ${state.score} 个敌人，用了 ${state.moves} 步，棋盘 ${state.size}x${state.size}，种子 ${state.seed}${stoneText}。来挑战我的成绩！`;
+      }
+
+      async function copyShareText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          return;
+        }
+        const area = document.createElement("textarea");
+        area.value = text;
+        area.setAttribute("readonly", "");
+        area.style.position = "fixed";
+        area.style.left = "-9999px";
+        area.style.top = "0";
+        document.body.appendChild(area);
+        area.select();
+        const copied = document.execCommand("copy");
+        area.remove();
+        if (!copied) throw new Error("copy failed");
+      }
+
+      async function shareGameResult() {
+        const title = "唐僧棋阵";
+        const text = shareGameText();
+        const url = shareGameUrl();
+        const sharePayload = { title, text, url };
+        els.shareStatus.textContent = "";
+        try {
+          if (navigator.share && navigator.canShare?.(sharePayload) !== false) {
+            await navigator.share(sharePayload);
+            els.shareStatus.textContent = "已打开分享面板，请选择微信好友发送。";
+            return;
+          }
+          await copyShareText(`${text}\n${url}`);
+          els.shareStatus.textContent = "成绩和链接已复制，打开微信好友聊天粘贴发送即可。";
+        } catch (error) {
+          if (error && error.name === "AbortError") {
+            els.shareStatus.textContent = "已取消分享。";
+            return;
+          }
+          try {
+            await copyShareText(`${text}\n${url}`);
+            els.shareStatus.textContent = "成绩和链接已复制，打开微信好友聊天粘贴发送即可。";
+          } catch {
+            els.shareStatus.textContent = "当前浏览器不支持直接分享，请手动复制页面链接发送给微信好友。";
+          }
+        }
+      }
+
+      function getAudioContext() {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return null;
+        if (!audioState.ctx) audioState.ctx = new AudioCtx();
+        if (audioState.ctx.state === "suspended") audioState.ctx.resume();
+        return audioState.ctx;
+      }
+
+      function playTone(ctx, at, freq, duration, volume, type = "square") {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, at);
+        gain.gain.setValueAtTime(0.0001, at);
+        gain.gain.exponentialRampToValueAtTime(volume, at + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, at + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(at);
+        osc.stop(at + duration + 0.02);
+      }
+
+      function playMoveCue(kind) {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        if (kind === "capture") {
+          playTone(ctx, now, 660, 0.08, 0.08, "square");
+          playTone(ctx, now + 0.075, 990, 0.12, 0.07, "triangle");
+          return;
+        }
+        playTone(ctx, now, 520, 0.07, 0.045, "triangle");
+      }
+
+      function triggerCaptureFeedback() {
+        els.board.classList.remove("capture-shake");
+        void els.board.offsetWidth;
+        els.board.classList.add("capture-shake");
+        window.setTimeout(() => els.board.classList.remove("capture-shake"), 380);
+        if (navigator.vibrate) navigator.vibrate([45, 25, 35]);
+      }
+
+      function triggerScout() {
+        state.scoutUntil = Date.now() + 1800;
+        render();
+        window.setTimeout(() => {
+          if (Date.now() >= state.scoutUntil) render();
+        }, 1850);
+      }
+
+      function render() {
+        const legal = new Map(legalPlayerMoves().map((move) => [cellKey(move.x, move.y), move]));
+        const danger = state.showThreats ? dangerTiles() : new Set();
+        const scouting = Date.now() < state.scoutUntil;
+        els.board.style.setProperty("--n", state.size);
+        els.board.innerHTML = "";
+        for (let y = 0; y < state.size; y++) {
+          for (let x = 0; x < state.size; x++) {
+            const key = cellKey(x, y);
+            const tile = document.createElement("button");
+            tile.type = "button";
+            tile.className = "tile";
+            tile.dataset.x = String(x);
+            tile.dataset.y = String(y);
+            tile.setAttribute("aria-label", `格子 ${x + 1},${y + 1}`);
+            if ((x + y) % 2) tile.classList.add("odd");
+            if (isWall(x, y)) {
+              tile.classList.add("wall");
+              tile.appendChild(sprite("rock"));
+            } else {
+              if (danger.has(key)) tile.classList.add("danger");
+              const move = legal.get(key);
+              if (move && state.alive) {
+                tile.classList.add("legal");
+                if (move.capture) tile.classList.add("capture");
+              }
+              const enemy = enemyAt(x, y);
+              if (enemy) {
+                const enemySprite = sprite(`enemy ${enemy.piece}`);
+                tile.appendChild(enemySprite);
+                if (scouting) {
+                  const order = document.createElement("span");
+                  order.className = "order-badge";
+                  order.textContent = String(state.enemies.indexOf(enemy) + 1);
+                  tile.appendChild(order);
+                }
+              }
+              if (isPlayerAt(x, y)) {
+                const player = sprite("player");
+                tile.appendChild(player);
+              }
+            }
+            if (state.lastCapture && state.lastCapture.x === x && state.lastCapture.y === y) tile.classList.add("flash");
+            if (state.lastDeath && state.lastDeath.x === x && state.lastDeath.y === y) tile.classList.add("danger");
+            tile.addEventListener("click", () => {
+              if (isPlayerAt(x, y)) triggerScout();
+              else takePlayerMove(x, y);
+            });
+            els.board.appendChild(tile);
+          }
+        }
+        els.scoreVal.textContent = String(state.score);
+        els.moveVal.textContent = String(state.moves);
+        els.enemyVal.textContent = String(state.enemies.length);
+        els.bestVal.textContent = String(Math.max(getBest(), state.score));
+        const stoneLabel = state.stoneSeed && state.stoneSeed !== state.seed ? ` / stone: ${state.stoneSeed}` : "";
+        els.seedLabel.textContent = `seed: ${state.seed}${stoneLabel} / ${state.size}x${state.size}`;
+        els.seedInput.value = state.seed;
+        els.threatBtn.textContent = `威胁: ${state.showThreats ? "开" : "关"}`;
+        document.querySelectorAll(".seg-btn").forEach((btn) => {
+          btn.classList.toggle("active", Number(btn.dataset.size) === state.size);
+        });
+      }
+
+      function sprite(name) {
+        const node = document.createElement("div");
+        node.className = `sprite ${name}`;
+        if (name === "player") {
+          for (const part of ["monk-face", "monk-sash", "monk-hand left", "monk-hand right", "monk-beads", "monk-feet", "monk-staff-tip", "monk-staff-ring"]) {
+            const detail = document.createElement("span");
+            detail.className = part;
+            node.appendChild(detail);
+          }
+        }
+        if (name.includes("knight")) {
+          for (const part of ["horse-tail", "horse-legs", "horse-hooves", "horse-mane", "horse-ear", "horse-saddle", "horse-satchel", "horse-bridle"]) {
+            const detail = document.createElement("span");
+            detail.className = part;
+            node.appendChild(detail);
+          }
+        }
+        if (name.includes("rook")) {
+          for (const part of ["warrior-ribbon", "warrior-bun left", "warrior-bun right", "warrior-hair", "warrior-headband", "warrior-arm left", "warrior-arm right", "warrior-sash", "warrior-staff", "warrior-flame", "warrior-feet", "warrior-gem"]) {
+            const detail = document.createElement("span");
+            detail.className = part;
+            node.appendChild(detail);
+          }
+        }
+        if (name.includes("bishop")) {
+          for (const part of ["elephant-ear left", "elephant-ear right", "elephant-arm left", "elephant-arm right", "elephant-trunk", "elephant-tusk left", "elephant-tusk right", "elephant-sash", "elephant-trim", "elephant-gem", "elephant-feet"]) {
+            const detail = document.createElement("span");
+            detail.className = part;
+            node.appendChild(detail);
+          }
+        }
+        return node;
+      }
+
+      function renderPieceKey() {
+        document.querySelectorAll(".key-glyph[data-piece]").forEach((glyph) => {
+          glyph.textContent = "";
+          const icon = sprite(`enemy ${glyph.dataset.piece}`);
+          icon.classList.add("legend-sprite");
+          glyph.appendChild(icon);
+        });
+      }
+
+      function writeLog(text) {
+        els.log.textContent = text;
+      }
+
+      function openModal(modal) {
+        modal.classList.add("open");
+      }
+
+      function closeModal(modal) {
+        modal.classList.remove("open");
+      }
+
+      function setSize(size) {
+        state.size = size;
+        localStorage.setItem("crownRun:size", String(size));
+        resetGame(state.seed || todaySeed(), state.stoneSeed || state.seed || todaySeed());
+      }
+
+      function initialGameOptions() {
+        const params = new URLSearchParams(window.location.search);
+        const requestedSize = Number(params.get("size"));
+        if ([8, 10, 12].includes(requestedSize)) {
+          state.size = requestedSize;
+          localStorage.setItem("crownRun:size", String(requestedSize));
+        }
+        const seed = params.get("seed") || todaySeed();
+        return {
+          seed,
+          stoneSeed: params.get("stone") || seed,
+        };
+      }
+
+      document.getElementById("restartBtn").addEventListener("click", () => resetGame(state.seed, state.stoneSeed || state.seed));
+      document.getElementById("stoneBtn").addEventListener("click", randomizeStones);
+      document.getElementById("againBtn").addEventListener("click", () => resetGame(state.seed, state.stoneSeed || state.seed));
+      document.getElementById("shareBtn").addEventListener("click", shareGameResult);
+      document.getElementById("closeOverBtn").addEventListener("click", () => closeModal(els.gameOver));
+      document.getElementById("newBtn").addEventListener("click", () => resetGame(randomSeed()));
+      document.getElementById("dailyBtn").addEventListener("click", () => resetGame(todaySeed()));
+      document.getElementById("helpBtn").addEventListener("click", () => openModal(els.helpModal));
+      document.getElementById("closeHelpBtn").addEventListener("click", () => closeModal(els.helpModal));
+      document.getElementById("seedBtn").addEventListener("click", () => resetGame(els.seedInput.value));
+      document.getElementById("seedInput").addEventListener("keydown", (event) => {
+        if (event.key === "Enter") resetGame(els.seedInput.value);
+      });
+      els.threatBtn.addEventListener("click", () => {
+        state.showThreats = !state.showThreats;
+        localStorage.setItem("crownRun:threats", String(state.showThreats));
+        render();
+      });
+      els.scoutBtn.addEventListener("click", triggerScout);
+      document.getElementById("sizeSeg").addEventListener("click", (event) => {
+        const btn = event.target.closest("[data-size]");
+        if (!btn) return;
+        setSize(Number(btn.dataset.size));
+      });
+      document.querySelectorAll(".modal").forEach((modal) => {
+        modal.addEventListener("click", (event) => {
+          if (event.target === modal) closeModal(modal);
+        });
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeModal(els.helpModal);
+          closeModal(els.gameOver);
+        }
+      });
+
+      renderPieceKey();
+      const initialGame = initialGameOptions();
+      resetGame(initialGame.seed, initialGame.stoneSeed);
+    </script>
+  </body>
+</html>
