@@ -2,326 +2,543 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>交易所注册链接</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>写乎博客 | 登录与创作</title>
   <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #1f2937;
+      --accent: #38bdf8;
+      --accent-2: #a855f7;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --success: #22c55e;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; }
+
     body {
-      font-family: "微软雅黑", sans-serif;
-      background-color: #f2f2f2;
-      text-align: center;
-      padding: 50px 20px;
+      margin: 0;
+      font-family: "Inter", "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+      background: radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.15), transparent 25%),
+                  radial-gradient(circle at 90% 10%, rgba(168, 85, 247, 0.18), transparent 25%),
+                  radial-gradient(circle at 20% 80%, rgba(34, 197, 94, 0.14), transparent 25%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
     }
 
-    h2 {
-      color: #333;
-      font-size: 24px;
+    a { color: inherit; text-decoration: none; }
+
+    header {
+      padding: 32px 20px 24px;
+      background: rgba(15, 23, 42, 0.6);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(12px);
+      z-index: 10;
     }
 
-    .button-container {
+    .nav {
+      max-width: 1200px;
+      margin: 0 auto;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 15px;
-      margin: 30px auto 0;
-      width: 100%;
-      max-width: 400px;
+      justify-content: space-between;
+      gap: 16px;
     }
 
-    .btn {
-      color: white;
-      padding: 14px 28px;
-      text-decoration: none;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
       font-size: 20px;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .nav-actions { display: flex; gap: 12px; align-items: center; }
+
+    .pill {
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #0b1224;
+      padding: 12px 16px;
+      border-radius: 12px;
       border: none;
-      border-radius: 6px;
+      font-weight: 700;
       cursor: pointer;
-      width: 100%;
-      max-width: 250px;
-      box-sizing: border-box;
-      display: block;
-      text-align: center;
-      transition: background-color 0.3s;
+      box-shadow: 0 10px 30px rgba(56, 189, 248, 0.35);
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
     }
 
-    /* 各交易所风格按钮 */
-    .btn-okx {
-      background-color: #000;
-    }
-    .btn-okx:hover {
-      background-color: #333;
+    .primary-btn:hover { transform: translateY(-1px); box-shadow: 0 16px 40px rgba(168, 85, 247, 0.3); }
+    .primary-btn:active { transform: translateY(0); }
+
+    .hero {
+      max-width: 1200px;
+      margin: 40px auto 0;
+      padding: 24px 20px 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      align-items: center;
     }
 
-    .btn-binance {
-      background-color: #F3BA2F;
-      color: #000;
-    }
-    .btn-binance:hover {
-      background-color: #d9a912;
-    }
-
-    .btn-bitget {
-      background-color: #18b8c8;
-    }
-    .btn-bitget:hover {
-      background-color: #0fa1ae;
-    }
-
-    .btn-bybit {
-      background-color: #666;
-      color: #fff;
-    }
-    .btn-bybit:hover {
-      background-color: #444;
-    }
-
-    .btn-gate {
-      background-color: #f03a3e;
-    }
-    .btn-gate:hover {
-      background-color: #d52a2f;
-    }
-
-    .btn-biya {
-      background-color: #000; /* 改为黑色 */
-    }
-    .btn-biya:hover {
-      background-color: #333; /* 悬停更深 */
-    }
-
-    .btn-airdrop {
-      background-color: #7e57c2;
-    }
-    .btn-airdrop:hover {
-      background-color: #5e35b1;
-    }
-
-    .btn-tutorial {
-      background-color: #2196F3;
-    }
-    .btn-tutorial:hover {
-      background-color: #0b7dda;
-    }
-
-    .btn-faq {
-      background-color: #17a2b8;
-    }
-    .btn-faq:hover {
-      background-color: #138496;
-    }
-
-    .btn-ad {
-      background-color: #6c757d;
-    }
-    .btn-ad:hover {
-      background-color: #5a6268;
-    }
-
-    /* 广告位轮播样式 */
-    .ad-slot {
-      width: 100%;
-      max-width: 250px;
-      margin: 20px auto 0;
-      border-radius: 6px;
-      overflow: hidden;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      background-color: #fff;
-      padding: 10px;
-      text-align: center;
+    .hero-card {
+      background: rgba(31, 41, 55, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 16px 50px rgba(0, 0, 0, 0.25);
       position: relative;
-    }
-
-    .ad-slider {
-      width: 100%;
-      height: 150px;
       overflow: hidden;
-      position: relative;
     }
 
-    .ad-slide {
-      width: 100%;
-      height: 100%;
-      display: none;
+    .hero-card::after {
+      content: "";
       position: absolute;
-      top: 0;
-      left: 0;
+      inset: 0;
+      background: radial-gradient(circle at 30% 20%, rgba(56, 189, 248, 0.12), transparent 30%),
+                  radial-gradient(circle at 80% 70%, rgba(168, 85, 247, 0.12), transparent 32%);
+      z-index: 0;
     }
 
-    .ad-slide img {
+    .hero-card h1 { margin: 0 0 12px; font-size: 32px; position: relative; z-index: 1; }
+    .hero-card p { margin: 0 0 20px; color: var(--muted); line-height: 1.6; position: relative; z-index: 1; }
+
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; position: relative; z-index: 1; }
+
+    .chip {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      padding: 8px 12px;
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .panel-grid {
+      max-width: 1200px;
+      margin: 24px auto 0;
+      padding: 0 20px 40px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .card h3 { margin: 0 0 12px; font-size: 20px; }
+    .card p { margin: 0 0 12px; color: var(--muted); line-height: 1.5; }
+
+    form { display: grid; gap: 12px; }
+
+    label { font-size: 14px; color: var(--muted); }
+
+    input, textarea, select {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      font-size: 15px;
     }
 
-    .ad-slide.active {
-      display: block;
+    textarea { min-height: 120px; resize: vertical; }
+
+    .form-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+    .muted { color: var(--muted); font-size: 14px; }
+
+    .status { padding: 10px 12px; border-radius: 12px; font-size: 14px; }
+    .status.success { background: rgba(34, 197, 94, 0.12); color: #bbf7d0; }
+    .status.error { background: rgba(239, 68, 68, 0.14); color: #fecaca; }
+
+    .post-list { display: grid; gap: 16px; }
+
+    .post-card {
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.02);
     }
 
-    /* 微信提示层样式 */
-    #weixin-tip {
-      display: none;
-      position: fixed;
-      z-index: 9999;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.8);
+    .post-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .post-title { margin: 0; font-size: 18px; }
+    .post-meta { color: var(--muted); font-size: 13px; margin: 4px 0 10px; }
+    .tag { padding: 6px 10px; border-radius: 10px; font-size: 12px; color: var(--text); background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.24); }
+
+    .empty { text-align: center; color: var(--muted); padding: 20px; border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 12px; }
+
+    .disabled-layer {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), rgba(168, 85, 247, 0.08));
+      border: 1px dashed rgba(255, 255, 255, 0.16);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 24px 20px 36px;
       text-align: center;
-      color: #fff;
-    }
-    #weixin-tip img {
-      width: 80%;
-      max-width: 400px;
-      margin-top: 80px;
-    }
-    #weixin-tip p {
-      margin-top: 20px;
-      font-size: 18px;
-      padding: 0 20px;
-      line-height: 1.5;
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.6);
     }
 
-    /* 响应式设计 */
-    @media (max-width: 768px) {
-      body {
-        padding: 30px 10px;
-      }
-      h2 {
-        font-size: 20px;
-      }
-      .button-container {
-        max-width: 100%;
-        gap: 10px;
-      }
-      .btn {
-        padding: 10px 18px;
-        font-size: 20px;
-        max-width: 100%;
-      }
-      .ad-slot {
-        max-width: 100%;
-        padding: 8px;
-      }
-      .ad-slider {
-        height: 120px;
-      }
-      .ad-slot a {
-        font-size: 14px;
-      }
-      #weixin-tip img {
-        width: 90%;
-        margin-top: 50px;
-      }
-      #weixin-tip p {
-        font-size: 16px;
-        padding: 0 10px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      body {
-        padding: 20px 5px;
-      }
-      h2 {
-        font-size: 18px;
-      }
-      .btn {
-        padding: 8px 15px;
-        font-size: 18px;
-      }
-      .ad-slot {
-        padding: 5px;
-      }
-      .ad-slider {
-        height: 100px;
-      }
-      .ad-slot a {
-        font-size: 12px;
-      }
-      #weixin-tip img {
-        margin-top: 30px;
-      }
-      #weixin-tip p {
-        font-size: 14px;
-      }
+    @media (max-width: 600px) {
+      .nav { flex-direction: column; align-items: flex-start; }
+      .nav-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+      .primary-btn { width: 100%; text-align: center; }
     }
   </style>
 </head>
 <body>
-  <h2>全球各大交易所注册链接如下</h2>
-  <div class="button-container">
-    <a class="btn btn-okx" href="https://www.ouxyi.link/ul/6CngT5?channelId=55394924">欧易OKX交易所</a>
-    <a class="btn btn-binance" href="https://accounts.maxweb.cc/zh-CN/register?ref=143840091">币安Binance交易所</a>
-    <a class="btn btn-bitget" href="https://www.niftah.cn/zh-CN/referral/register?clacCode=F1G9U5KN&from=%2Fzh-CN%2Fevents%2Freferral-all-program&source=events&utmSource=PremierInviter">Bitget交易所</a>
-    <a class="btn btn-bybit" href="https://www.bybitglobal.com/invite?ref=DRXRE5">Bybit交易所</a>
-    <a class="btn btn-gate" href="https://www.gateweb.store/signup/BAVDVVpa?ref_type=103">芝麻Gate交易所</a>
-    <a class="btn btn-biya" href="https://biyapay.com/re/34153828">BiyaPay交易所</a>
-    <a class="btn btn-airdrop" href="https://t.me/+7M2YwE-mq08xNDJl">优质空投研究所</a>
-    <a class="btn btn-tutorial" href="tutorial.html">教程</a>
-    <a class="btn btn-faq" href="faq.html">疑难解答</a>
-    <a class="btn btn-ad" href="ad.html">1美金广告位</a>
-
-    <div class="ad-slot">
-      <div class="ad-slider">
-        <div class="ad-slide active">
-          <a href="ad1.html" target="_blank">
-            <img src="images/ad1.png" alt="广告1">
-          </a>
-        </div>
-        <div class="ad-slide">
-          <a href="mn2.html" target="_blank">
-            <img src="images/ad2.png" alt="广告2">
-          </a>
-        </div>
-        <div class="ad-slide">
-          <a href="客户广告链接3" target="_blank">
-            <img src="images/ad3.png" alt="广告3">
-          </a>
-        </div>
-        <div class="ad-slide">
-          <a href="客户广告链接4" target="_blank">
-            <img src="images/ad4.png" alt="广告4">
-          </a>
-        </div>
-        <div class="ad-slide">
-          <a href="客户广告链接5" target="_blank">
-            <img src="images/ad5.png" alt="广告5">
-          </a>
-        </div>
+  <header>
+    <div class="nav">
+      <div class="brand">
+        <span class="brand-badge">写</span>
+        <span>写乎 · 创作者博客</span>
+      </div>
+      <div class="nav-actions">
+        <span class="pill" id="userStatus">未登录</span>
+        <button class="primary-btn" id="heroCta">开始创作</button>
       </div>
     </div>
-  </div>
+  </header>
 
-  <div id="weixin-tip">
-    <img src="images/pop-up.png" alt="在浏览器中打开指引" />
-    <p>请点击右上角“...”<br>选择“在浏览器中打开”</p>
-  </div>
+  <section class="hero">
+    <div class="hero-card">
+      <h1>写下故事，和世界链接</h1>
+      <p>创建一个简单的登录型博客：注册账号、发表文章、查看社区精选。所有数据在本地浏览器保存，方便快速体验。</p>
+      <div class="chips">
+        <span class="chip">账号登录</span>
+        <span class="chip">即时创作</span>
+        <span class="chip">分类筛选</span>
+        <span class="chip">响应式布局</span>
+      </div>
+    </div>
+    <div class="hero-card">
+      <h1>登录后可发布专属文章</h1>
+      <p>用邮箱+密码注册，立即登录并创建博客文章。无需服务器，数据存储于浏览器 LocalStorage。</p>
+      <div class="chips">
+        <span class="chip">📌 适合教学演示</span>
+        <span class="chip">📝 Markdown 风格排版</span>
+        <span class="chip">🔒 简单会话状态</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel-grid" id="authSection">
+    <div class="card" id="loginCard">
+      <h3>用户登录</h3>
+      <p>使用已注册的账号登录，进入创作空间。</p>
+      <div id="loginStatus" class="status" style="display:none"></div>
+      <form id="loginForm">
+        <div>
+          <label for="loginEmail">邮箱</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com" required />
+        </div>
+        <div>
+          <label for="loginPassword">密码</label>
+          <input type="password" id="loginPassword" placeholder="••••••" minlength="6" required />
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="primary-btn">登录</button>
+          <span class="muted">没有账号？请在右侧注册</span>
+        </div>
+      </form>
+    </div>
+
+    <div class="card" id="registerCard">
+      <h3>注册新账号</h3>
+      <p>只需邮箱与密码即可完成注册，登录后即可发布文章。</p>
+      <div id="registerStatus" class="status" style="display:none"></div>
+      <form id="registerForm">
+        <div>
+          <label for="registerEmail">邮箱</label>
+          <input type="email" id="registerEmail" placeholder="you@example.com" required />
+        </div>
+        <div>
+          <label for="registerPassword">密码（至少 6 位）</label>
+          <input type="password" id="registerPassword" placeholder="安全密码" minlength="6" required />
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="primary-btn">注册并登录</button>
+          <span class="muted">小提示：本示例不会将数据上传</span>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="panel-grid" id="blogSection">
+    <div class="card">
+      <h3>写文章</h3>
+      <p id="composeTip" class="muted">登录后即可发布一篇新的博客文章。</p>
+      <form id="postForm">
+        <div>
+          <label for="postTitle">标题</label>
+          <input type="text" id="postTitle" placeholder="起一个醒目的标题" required />
+        </div>
+        <div>
+          <label for="postCategory">分类</label>
+          <select id="postCategory">
+            <option value="产品思考">产品思考</option>
+            <option value="前端开发">前端开发</option>
+            <option value="设计">设计</option>
+            <option value="生活">生活</option>
+          </select>
+        </div>
+        <div>
+          <label for="postContent">内容</label>
+          <textarea id="postContent" placeholder="写下你的想法与故事..." required></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="primary-btn">发布文章</button>
+          <span class="muted">数据保存在浏览器本地，可随时删除</span>
+        </div>
+      </form>
+      <div id="composeBlocker" class="disabled-layer" style="display:none">🔒 请先登录后再创作</div>
+    </div>
+
+    <div class="card">
+      <div class="post-header">
+        <div>
+          <h3 style="margin:0">社区精选</h3>
+          <p class="muted" style="margin:4px 0 0">筛选分类，浏览最新发布的文章</p>
+        </div>
+        <select id="filterCategory">
+          <option value="all">全部分类</option>
+          <option value="产品思考">产品思考</option>
+          <option value="前端开发">前端开发</option>
+          <option value="设计">设计</option>
+          <option value="生活">生活</option>
+        </select>
+      </div>
+      <div id="postList" class="post-list"></div>
+    </div>
+  </section>
+
+  <section class="panel-grid">
+    <div class="card">
+      <h3>登录体验设计</h3>
+      <p>示例实现了基础的邮箱+密码登录、注册、会话状态显示与退出功能。逻辑全部运行在浏览器内，方便本地演示。</p>
+    </div>
+    <div class="card">
+      <h3>本地数据存储</h3>
+      <p>用户信息与文章通过 LocalStorage 维护，刷新页面依然可用。生产环境请替换为安全的后端服务。</p>
+    </div>
+    <div class="card">
+      <h3>即时创作</h3>
+      <p>登录后可以立即发布文章，支持选择分类、实时写入并展示最新的内容。</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>写乎博客 · 本地示例站点 · 体验登录、注册与博客发布流程</p>
+    <p>提示：为演示而生，未接入真实数据库或后端接口。</p>
+  </footer>
 
   <script>
-    function isWeixin() {
-      return /micromessenger/i.test(navigator.userAgent);
-    }
-    if (isWeixin()) {
-      document.getElementById('weixin-tip').style.display = 'block';
-    }
+    const userKey = 'blogUsers';
+    const sessionKey = 'blogSession';
+    const postsKey = 'blogPosts';
 
-    const slides = document.querySelectorAll('.ad-slide');
-    let currentSlide = 0;
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const postForm = document.getElementById('postForm');
+    const loginStatus = document.getElementById('loginStatus');
+    const registerStatus = document.getElementById('registerStatus');
+    const postList = document.getElementById('postList');
+    const filterCategory = document.getElementById('filterCategory');
+    const userStatus = document.getElementById('userStatus');
+    const composeTip = document.getElementById('composeTip');
+    const composeBlocker = document.getElementById('composeBlocker');
+    const heroCta = document.getElementById('heroCta');
 
-    function showSlide(index) {
-      slides.forEach((slide, i) => {
-        slide.classList.toggle('active', i === index);
-      });
-    }
+    const load = (key, fallback) => {
+      try {
+        const value = localStorage.getItem(key);
+        return value ? JSON.parse(value) : fallback;
+      } catch (e) {
+        console.warn('读取本地数据失败', e);
+        return fallback;
+      }
+    };
 
-    function nextSlide() {
-      currentSlide = (currentSlide + 1) % slides.length;
-      showSlide(currentSlide);
-    }
+    const save = (key, value) => localStorage.setItem(key, JSON.stringify(value));
 
-    setInterval(nextSlide, 3000);
-    showSlide(currentSlide);
+    const formatDate = (date) => new Intl.DateTimeFormat('zh-CN', {
+      dateStyle: 'medium', timeStyle: 'short'
+    }).format(date);
+
+    const getSession = () => load(sessionKey, null);
+    const setSession = (email) => save(sessionKey, email);
+    const clearSession = () => localStorage.removeItem(sessionKey);
+
+    const renderStatus = (el, message, type) => {
+      el.textContent = message;
+      el.className = `status ${type}`;
+      el.style.display = 'block';
+    };
+
+    const hideStatus = (el) => { el.style.display = 'none'; };
+
+    const seedPosts = () => {
+      const existing = load(postsKey, []);
+      if (existing.length) return existing;
+      const demo = [
+        { title: '如何快速写出第一篇博客', category: '产品思考', content: '把大纲拆成三个段落：背景、思路、结论。先写标题，再填充细节。', author: '社区编辑', createdAt: Date.now() - 7200000 },
+        { title: '用浏览器做小型产品验证', category: '前端开发', content: '借助 LocalStorage 和原生 JS 就能完成登录与数据保存，先把体验跑通，再考虑后端。', author: '社区编辑', createdAt: Date.now() - 3600000 },
+        { title: '设计一张有温度的封面', category: '设计', content: '多用渐变与柔和光影，保持留白，让用户的视线聚焦核心信息。', author: '社区设计师', createdAt: Date.now() - 1800000 }
+      ];
+      save(postsKey, demo);
+      return demo;
+    };
+
+    const renderPosts = () => {
+      const posts = load(postsKey, []);
+      const category = filterCategory.value;
+      const filtered = category === 'all' ? posts : posts.filter(p => p.category === category);
+
+      postList.innerHTML = '';
+
+      if (!filtered.length) {
+        postList.innerHTML = '<div class="empty">暂无文章，快来写下第一篇吧～</div>';
+        return;
+      }
+
+      filtered
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .forEach(post => {
+          const card = document.createElement('article');
+          card.className = 'post-card';
+          card.innerHTML = `
+            <div class="post-header">
+              <h4 class="post-title">${post.title}</h4>
+              <span class="tag">${post.category}</span>
+            </div>
+            <div class="post-meta">作者：${post.author} · ${formatDate(new Date(post.createdAt))}</div>
+            <div class="muted">${post.content}</div>
+          `;
+          postList.appendChild(card);
+        });
+    };
+
+    const updateAuthUI = () => {
+      const session = getSession();
+      if (session) {
+        userStatus.textContent = `已登录：${session}`;
+        userStatus.className = 'pill';
+        composeTip.textContent = '已登录，可以开始创作新文章。';
+        composeBlocker.style.display = 'none';
+        postForm.querySelectorAll('input, textarea, select, button').forEach(el => el.disabled = false);
+      } else {
+        userStatus.textContent = '未登录';
+        composeTip.textContent = '请先登录或注册，再开始创作。';
+        composeBlocker.style.display = 'flex';
+        postForm.querySelectorAll('input, textarea, select, button').forEach(el => el.disabled = true);
+      }
+    };
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      hideStatus(loginStatus);
+      const email = loginEmail.value.trim().toLowerCase();
+      const password = loginPassword.value;
+      const users = load(userKey, []);
+      const user = users.find(u => u.email === email && u.password === password);
+
+      if (!user) {
+        renderStatus(loginStatus, '账号或密码不正确', 'error');
+        return;
+      }
+
+      setSession(email);
+      renderStatus(loginStatus, '登录成功，开始创作吧！', 'success');
+      updateAuthUI();
+    });
+
+    registerForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      hideStatus(registerStatus);
+      const email = registerEmail.value.trim().toLowerCase();
+      const password = registerPassword.value;
+      const users = load(userKey, []);
+
+      if (users.some(u => u.email === email)) {
+        renderStatus(registerStatus, '该邮箱已注册，请直接登录', 'error');
+        return;
+      }
+
+      users.push({ email, password });
+      save(userKey, users);
+      setSession(email);
+      renderStatus(registerStatus, '注册成功，已为你登录', 'success');
+      updateAuthUI();
+    });
+
+    postForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const session = getSession();
+      if (!session) return;
+
+      const title = postTitle.value.trim();
+      const content = postContent.value.trim();
+      const category = postCategory.value;
+      if (!title || !content) return;
+
+      const posts = load(postsKey, []);
+      posts.push({ title, content, category, author: session, createdAt: Date.now() });
+      save(postsKey, posts);
+      postForm.reset();
+      renderPosts();
+    });
+
+    filterCategory.addEventListener('change', renderPosts);
+
+    heroCta.addEventListener('click', () => {
+      document.getElementById('authSection').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // 初始化
+    seedPosts();
+    updateAuthUI();
+    renderPosts();
   </script>
 </body>
 </html>
