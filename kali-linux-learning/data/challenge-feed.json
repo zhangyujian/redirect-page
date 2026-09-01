@@ -1,0 +1,80 @@
+{
+  "version": "2026.06.21",
+  "updatedAt": "2026-06-21",
+  "title": "Security Path 练习题库",
+  "source": "内置自动更新源",
+  "questions": {
+    "kali": [
+      {
+        "uid": "kali-service-discovery-2026-06",
+        "id": "02",
+        "title": "复核靶机服务指纹",
+        "description": "在安全沙盒中重新执行服务版本探测，确认 SSH 与 Web 服务的版本线索。",
+        "target": "192.168.56.101",
+        "hint": "先读取任务，再使用课程中讲到的 nmap -sV 对授权靶机做服务识别。",
+        "command": "nmap -sV 192.168.56.101",
+        "requiredCourseId": 3,
+        "difficulty": "初级",
+        "knowledge": ["理解端口状态", "使用 -sV 进行服务版本探测", "区分探测结果与漏洞证据"],
+        "objectives": ["读取任务说明", "执行服务版本探测", "记录 SSH 与 HTTP 服务线索"],
+        "success": "你完成了服务版本复核，并把结果限定为后续验证线索。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 02 // SERVICE FINGERPRINT REVIEW", "目标：确认内置靶机 192.168.56.101 的服务版本线索。", "提示：使用 nmap -sV 192.168.56.101"],
+          "nmap -sV 192.168.56.101": ["Starting Nmap 7.95 ( https://nmap.org )", "Nmap scan report for lab-target (192.168.56.101)", "PORT   STATE SERVICE VERSION", "22/tcp open  ssh     OpenSSH 9.2", "80/tcp open  http    nginx 1.22", "结论：版本信息是分析线索，不等同于漏洞证据。"]
+        },
+        "sourceLinks": [
+          { "title": "Kali Nmap 工具页", "url": "https://www.kali.org/tools/nmap/" },
+          { "title": "Nmap 服务版本探测", "url": "https://nmap.org/book/man-version-detection.html" }
+        ]
+      }
+    ],
+    "parrot": [
+      {
+        "uid": "parrot-local-exposure-2026-06",
+        "id": "02",
+        "title": "确认本机监听边界",
+        "description": "检查模拟工作站的监听地址，区分只对本机开放和对实验网段开放的服务。",
+        "target": "parrot-workstation",
+        "hint": "先读取任务，再使用 ss -tulpn 查看监听地址、端口和进程。",
+        "command": "ss -tulpn",
+        "requiredCourseId": 3,
+        "difficulty": "初级",
+        "knowledge": ["理解 127.0.0.1 与实验网卡绑定", "使用 ss 查看监听套接字", "关联端口、进程与暴露范围"],
+        "objectives": ["读取审计说明", "列出监听套接字", "判断哪些服务只允许本机访问"],
+        "success": "你确认了本机限定服务与实验网段服务，完成了暴露面复核。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 02 // LISTENING SCOPE REVIEW", "目标：判断服务绑定在 127.0.0.1 还是实验网卡。", "提示：使用 ss -tulpn"],
+          "ss -tulpn": ["Netid State  Local Address:Port  Process", "udp   UNCONN 127.0.0.1:53       users:((\"dnsmasq\",pid=612))", "tcp   LISTEN 127.0.0.1:631      users:((\"cupsd\",pid=744))", "tcp   LISTEN 192.168.56.20:8080 users:((\"python3\",pid=904))", "结论：53 与 631 仅本机可见；8080 对实验网络开放。"]
+        },
+        "sourceLinks": [
+          { "title": "ss 命令手册", "url": "https://man7.org/linux/man-pages/man8/ss.8.html" },
+          { "title": "Parrot AppArmor 配置", "url": "https://parrotsec.org/docs/configuration/apparmor/" }
+        ]
+      }
+    ],
+    "blackarch": [
+      {
+        "uid": "blackarch-forensic-search-2026-06",
+        "id": "02",
+        "title": "筛选取证工具候选包",
+        "description": "使用 BlackArch 分类搜索模拟仓库，找出文件取证方向的候选工具。",
+        "target": "blackarch-repository",
+        "hint": "读取任务后，使用 pacman -Ss blackarch-forensic 搜索取证分类。",
+        "command": "pacman -Ss blackarch-forensic",
+        "requiredCourseId": 3,
+        "difficulty": "初级",
+        "knowledge": ["理解 BlackArch 工具分类", "使用 pacman -Ss 搜索仓库", "从包描述判断工具用途"],
+        "objectives": ["读取仓库任务", "搜索取证工具分类", "识别两个候选包的用途"],
+        "success": "你根据分类和包描述筛选出了取证工具候选项。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 02 // FORENSIC PACKAGE TRIAGE", "目标：在模拟仓库中筛选文件取证相关工具。", "提示：使用 pacman -Ss blackarch-forensic"],
+          "pacman -Ss blackarch-forensic": ["blackarch/sleuthkit 4.12.1-1 [blackarch-forensic]", "    File system and media management forensic tools", "blackarch/bulk-extractor 2.1.1-2 [blackarch-forensic]", "    Extract useful information without parsing file systems", "blackarch/foremost 1.5.7-8 [blackarch-forensic]", "    Recover files based on headers and footers", "结论：先看分类和描述，再决定是否安装。"]
+        },
+        "sourceLinks": [
+          { "title": "BlackArch 工具列表", "url": "https://blackarch.org/tools.html" },
+          { "title": "ArchWiki pacman", "url": "https://wiki.archlinux.org/title/Pacman" }
+        ]
+      }
+    ]
+  }
+}
