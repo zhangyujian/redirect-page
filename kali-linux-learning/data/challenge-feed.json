@@ -1,6 +1,6 @@
 {
-  "version": "2026.06.21",
-  "updatedAt": "2026-06-21",
+  "version": "2026.09.02",
+  "updatedAt": "2026-09-02",
   "title": "Security Path 练习题库",
   "source": "内置自动更新源",
   "questions": {
@@ -26,6 +26,96 @@
           { "title": "Kali Nmap 工具页", "url": "https://www.kali.org/tools/nmap/" },
           { "title": "Nmap 服务版本探测", "url": "https://nmap.org/book/man-version-detection.html" }
         ]
+      },
+      {
+        "uid": "kali-service-discovery-2026-09-03",
+        "id": "03",
+        "title": "记录 Web 服务版本线索",
+        "description": "在授权沙盒中复核 Web 服务的版本输出，并把探测结果与漏洞结论区分开。",
+        "target": "192.168.56.101",
+        "hint": "先读取任务，再使用课程中的 nmap -sV；重点观察 80 端口的 SERVICE 与 VERSION 列。",
+        "command": "nmap -sV 192.168.56.101",
+        "requiredCourseId": 3,
+        "difficulty": "初级",
+        "knowledge": ["读取 Nmap 表格列", "理解服务版本只是线索", "记录可复核的观察结果"],
+        "objectives": ["读取任务说明", "确认 HTTP 服务版本", "写下后续验证边界"],
+        "success": "你记录了 HTTP 服务线索，并明确没有把版本信息直接当成漏洞结论。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 03 // WEB VERSION CLUE", "目标：记录 80 端口的服务版本线索。", "提示：使用 nmap -sV 192.168.56.101"],
+          "nmap -sV 192.168.56.101": ["Starting Nmap 7.95", "80/tcp open  http    nginx 1.22", "结论：先记录版本，再查官方公告与授权验证步骤。"]
+        }
+      },
+      {
+        "uid": "kali-service-discovery-2026-09-04",
+        "id": "04",
+        "title": "核对 SSH 暴露服务",
+        "description": "复核实验主机的 SSH 服务信息，练习从扫描输出提取主机、端口和服务三类事实。",
+        "target": "192.168.56.101",
+        "hint": "使用课程中的 nmap -sV，并按 PORT、STATE、SERVICE、VERSION 顺序记录。",
+        "command": "nmap -sV 192.168.56.101",
+        "requiredCourseId": 3,
+        "difficulty": "初级",
+        "knowledge": ["识别 TCP 端口", "区分 open 与服务名称", "建立审计记录格式"],
+        "objectives": ["读取任务说明", "找到 SSH 服务端口", "完成最小审计记录"],
+        "success": "你完成了 SSH 服务的事实记录，后续分析可以基于明确的端口和版本线索展开。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 04 // SSH EXPOSURE", "目标：确认实验主机的 SSH 服务端口与版本线索。", "提示：使用 nmap -sV 192.168.56.101"],
+          "nmap -sV 192.168.56.101": ["Nmap scan report for lab-target (192.168.56.101)", "22/tcp open  ssh     OpenSSH 9.2", "80/tcp open  http    nginx 1.22", "结论：只记录授权主机的可观察结果。"]
+        }
+      },
+      {
+        "uid": "kali-service-discovery-2026-09-05",
+        "id": "05",
+        "title": "完成服务发现基线",
+        "description": "对同一授权靶机建立一次可重复的服务发现基线，为后续课程的日志与加固练习保留依据。",
+        "target": "192.168.56.101",
+        "hint": "运行 nmap -sV 后，对照任务目标只记录开放端口和服务版本，不扩大扫描范围。",
+        "command": "nmap -sV 192.168.56.101",
+        "requiredCourseId": 3,
+        "difficulty": "基础",
+        "knowledge": ["基线的含义", "限定扫描范围", "保存时间与结果"],
+        "objectives": ["读取任务说明", "执行基线探测", "记录扫描时间和结果"],
+        "success": "你建立了范围清晰的服务发现基线，结果可以用于后续比较。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 05 // BASELINE", "目标：建立授权靶机的服务发现基线。", "提示：使用 nmap -sV 192.168.56.101"],
+          "nmap -sV 192.168.56.101": ["Nmap 7.95 scan baseline", "Host is up (0.0021s latency).", "22/tcp open ssh OpenSSH 9.2", "80/tcp open http nginx 1.22", "建议：把时间、范围和输出一并写入报告。"]
+        }
+      },
+      {
+        "uid": "kali-service-discovery-2026-09-06",
+        "id": "06",
+        "title": "判断扫描结果的证据等级",
+        "description": "练习从服务探测结果中提取事实、推测和待验证事项，避免把工具输出夸大成安全结论。",
+        "target": "192.168.56.101",
+        "hint": "使用 nmap -sV，找到 SSH 和 HTTP 行，然后分别标记为事实和待验证线索。",
+        "command": "nmap -sV 192.168.56.101",
+        "requiredCourseId": 3,
+        "difficulty": "基础",
+        "knowledge": ["事实与推测", "版本识别局限", "最小化安全结论"],
+        "objectives": ["读取任务说明", "提取服务事实", "写出一条待验证事项"],
+        "success": "你正确区分了扫描事实与待验证事项，保持了审计结论的边界。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 06 // EVIDENCE LEVEL", "目标：把扫描输出分为事实和待验证线索。", "提示：使用 nmap -sV 192.168.56.101"],
+          "nmap -sV 192.168.56.101": ["PORT   STATE SERVICE VERSION", "22/tcp open  ssh     OpenSSH 9.2", "80/tcp open  http    nginx 1.22", "结论：版本识别不能单独证明存在漏洞。"]
+        }
+      },
+      {
+        "uid": "kali-service-discovery-2026-09-07",
+        "id": "07",
+        "title": "整理 Nmap 服务发现报告",
+        "description": "把一次服务发现结果整理成适合复盘的短报告，包含目标、范围、发现和下一步。",
+        "target": "192.168.56.101",
+        "hint": "运行 nmap -sV 后，用四行结构记录：目标、范围、发现、下一步。",
+        "command": "nmap -sV 192.168.56.101",
+        "requiredCourseId": 3,
+        "difficulty": "基础",
+        "knowledge": ["报告结构", "复盘可重复性", "下一步授权确认"],
+        "objectives": ["读取任务说明", "完成服务发现", "形成四行复盘报告"],
+        "success": "你的报告包含了目标、范围、发现和下一步，具备良好的复盘结构。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 07 // REPORTING", "目标：把服务探测结果整理成复盘报告。", "提示：使用 nmap -sV 192.168.56.101"],
+          "nmap -sV 192.168.56.101": ["Nmap scan report for lab-target", "Not shown: 998 closed tcp ports", "22/tcp open ssh OpenSSH 9.2", "80/tcp open http nginx 1.22", "建议：后续操作先确认范围和授权。"]
+        }
       }
     ],
     "parrot": [
@@ -50,6 +140,96 @@
           { "title": "ss 命令手册", "url": "https://man7.org/linux/man-pages/man8/ss.8.html" },
           { "title": "Parrot AppArmor 配置", "url": "https://parrotsec.org/docs/configuration/apparmor/" }
         ]
+      },
+      {
+        "uid": "parrot-local-exposure-2026-09-03",
+        "id": "03",
+        "title": "区分本机与网段监听",
+        "description": "使用 Parrot 工作站的监听信息，判断哪些服务只绑定回环地址，哪些服务暴露到实验网卡。",
+        "target": "parrot-workstation",
+        "hint": "运行 ss -tulpn，重点比较 127.0.0.1 与 192.168.56.20。",
+        "command": "ss -tulpn",
+        "requiredCourseId": 3,
+        "difficulty": "初级",
+        "knowledge": ["回环地址", "监听地址与暴露面", "按证据判断范围"],
+        "objectives": ["读取任务说明", "列出监听端口", "标记网段暴露服务"],
+        "success": "你正确区分了本机服务和实验网段服务，完成了监听范围判断。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 03 // BINDING SCOPE", "目标：比较回环地址和实验网卡绑定。", "提示：使用 ss -tulpn"],
+          "ss -tulpn": ["Netid State  Local Address:Port  Process", "tcp LISTEN 127.0.0.1:631 users:((\"cupsd\",pid=744))", "tcp LISTEN 192.168.56.20:8080 users:((\"python3\",pid=904))", "结论：8080 对实验网段开放，631 仅本机可见。"]
+        }
+      },
+      {
+        "uid": "parrot-local-exposure-2026-09-04",
+        "id": "04",
+        "title": "关联监听端口与进程",
+        "description": "在隐私与防御工作台中确认监听服务对应的进程名称，为后续服务治理准备证据。",
+        "target": "parrot-workstation",
+        "hint": "运行 ss -tulpn，记录 Local Address、Port 和 Process 三列。",
+        "command": "ss -tulpn",
+        "requiredCourseId": 3,
+        "difficulty": "初级",
+        "knowledge": ["套接字与进程", "权限对输出的影响", "服务盘点记录"],
+        "objectives": ["读取任务说明", "找到进程字段", "记录一个需要复核的服务"],
+        "success": "你把端口、监听地址和进程建立了关联，完成了服务盘点。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 04 // PROCESS OWNERS", "目标：把监听端口和进程名称关联起来。", "提示：使用 ss -tulpn"],
+          "ss -tulpn": ["Netid State Local Address:Port Process", "udp UNCONN 127.0.0.1:53 users:((\"dnsmasq\",pid=612))", "tcp LISTEN 127.0.0.1:631 users:((\"cupsd\",pid=744))", "tcp LISTEN 192.168.56.20:8080 users:((\"python3\",pid=904))", "提示：权限不足时进程信息可能不完整。"]
+        }
+      },
+      {
+        "uid": "parrot-local-exposure-2026-09-05",
+        "id": "05",
+        "title": "建立工作站监听基线",
+        "description": "对 Parrot 实验工作站建立一份监听基线，练习记录协议、状态、地址和端口。",
+        "target": "parrot-workstation",
+        "hint": "使用 ss -tulpn，按 UDP 和 TCP 分组保存输出，不要修改任何网络配置。",
+        "command": "ss -tulpn",
+        "requiredCourseId": 3,
+        "difficulty": "基础",
+        "knowledge": ["UDP 与 TCP", "监听基线", "只读审计流程"],
+        "objectives": ["读取任务说明", "完成监听基线", "写出一个异常观察"],
+        "success": "你完成了只读监听基线，并指出了需要后续确认的实验服务。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 05 // LISTENING BASELINE", "目标：保存工作站的监听基线。", "提示：使用 ss -tulpn"],
+          "ss -tulpn": ["Netid State Local Address:Port Process", "udp UNCONN 127.0.0.1:53 users:((\"dnsmasq\",pid=612))", "tcp LISTEN 127.0.0.1:631 users:((\"cupsd\",pid=744))", "tcp LISTEN 192.168.56.20:8080 users:((\"python3\",pid=904))", "基线完成：共 3 个示例监听。"]
+        }
+      },
+      {
+        "uid": "parrot-local-exposure-2026-09-06",
+        "id": "06",
+        "title": "判断最小暴露面",
+        "description": "根据监听地址判断哪些服务应保持本机可见，练习用最小暴露面原则提出防御建议。",
+        "target": "parrot-workstation",
+        "hint": "运行 ss -tulpn；不要只看端口号，要先看绑定地址。",
+        "command": "ss -tulpn",
+        "requiredCourseId": 3,
+        "difficulty": "基础",
+        "knowledge": ["最小暴露面", "地址优先于端口", "防御建议边界"],
+        "objectives": ["读取任务说明", "找出网卡绑定服务", "提出一条最小暴露建议"],
+        "success": "你根据绑定地址提出了最小暴露建议，没有把端口号单独当作风险结论。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 06 // MINIMUM EXPOSURE", "目标：找出不必要的实验网卡暴露。", "提示：使用 ss -tulpn 并先判断绑定地址。"],
+          "ss -tulpn": ["tcp LISTEN 127.0.0.1:631 users:((\"cupsd\",pid=744))", "tcp LISTEN 192.168.56.20:8080 users:((\"python3\",pid=904))", "结论：仅对本机提供的服务不应无理由绑定实验网卡。"]
+        }
+      },
+      {
+        "uid": "parrot-local-exposure-2026-09-07",
+        "id": "07",
+        "title": "整理本机暴露面报告",
+        "description": "把监听审计结果整理为防御报告，包含观察结果、影响范围和下一步确认事项。",
+        "target": "parrot-workstation",
+        "hint": "运行 ss -tulpn 后，用地址、端口、进程、建议四列写下复盘结果。",
+        "command": "ss -tulpn",
+        "requiredCourseId": 3,
+        "difficulty": "基础",
+        "knowledge": ["防御报告", "影响范围", "复核和变更分离"],
+        "objectives": ["读取任务说明", "完成监听审计", "写出防御复盘"],
+        "success": "你完成了包含范围和证据的监听审计报告。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 07 // DEFENSE REPORT", "目标：输出本机暴露面复盘报告。", "提示：使用 ss -tulpn 并记录地址、端口和进程。"],
+          "ss -tulpn": ["Netid State Local Address:Port Process", "udp UNCONN 127.0.0.1:53 users:((\"dnsmasq\",pid=612))", "tcp LISTEN 127.0.0.1:631 users:((\"cupsd\",pid=744))", "tcp LISTEN 192.168.56.20:8080 users:((\"python3\",pid=904))", "建议：变更服务前先确认业务需求和授权。"]
+        }
       }
     ],
     "blackarch": [
@@ -74,6 +254,96 @@
           { "title": "BlackArch 工具列表", "url": "https://blackarch.org/tools.html" },
           { "title": "ArchWiki pacman", "url": "https://wiki.archlinux.org/title/Pacman" }
         ]
+      },
+      {
+        "uid": "blackarch-forensic-search-2026-09-03",
+        "id": "03",
+        "title": "按取证分类筛选包",
+        "description": "在 BlackArch 模拟仓库中按分类筛选取证工具，练习从包名和描述判断用途。",
+        "target": "blackarch-repository",
+        "hint": "先读取任务，再用 pacman -Ss blackarch-forensic；优先查看分类和描述。",
+        "command": "pacman -Ss blackarch-forensic",
+        "requiredCourseId": 3,
+        "difficulty": "初级",
+        "knowledge": ["仓库搜索", "工具分类", "包描述阅读"],
+        "objectives": ["读取仓库任务", "筛选取证包", "记录两个包的用途"],
+        "success": "你使用分类和描述筛选了候选包，没有直接安装整个工具集合。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 03 // FORENSIC CATEGORY", "目标：按取证分类筛选候选包。", "提示：使用 pacman -Ss blackarch-forensic"],
+          "pacman -Ss blackarch-forensic": ["blackarch/sleuthkit 4.12.1-1 [blackarch-forensic]", "    File system and media management forensic tools", "blackarch/foremost 1.5.7-8 [blackarch-forensic]", "    Recover files based on headers and footers", "结论：先看用途，再决定是否安装。"]
+        }
+      },
+      {
+        "uid": "blackarch-forensic-search-2026-09-04",
+        "id": "04",
+        "title": "比较取证候选工具",
+        "description": "比较模拟仓库中不同取证工具的描述，选择更符合文件系统分析任务的候选项。",
+        "target": "blackarch-repository",
+        "hint": "使用 pacman -Ss blackarch-forensic，对照工具用途描述做选择。",
+        "command": "pacman -Ss blackarch-forensic",
+        "requiredCourseId": 3,
+        "difficulty": "初级",
+        "knowledge": ["候选工具比较", "任务驱动选型", "依赖意识"],
+        "objectives": ["读取仓库任务", "比较两个候选工具", "说明选择依据"],
+        "success": "你以任务目标而不是工具数量为依据完成了取证工具选型。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 04 // TOOL COMPARISON", "目标：选出适合文件系统分析的候选工具。", "提示：使用 pacman -Ss blackarch-forensic"],
+          "pacman -Ss blackarch-forensic": ["blackarch/sleuthkit 4.12.1-1", "    File system and media management forensic tools", "blackarch/bulk-extractor 2.1.1-2", "    Extract useful information without parsing file systems", "提示：不同工具解决不同阶段的问题。"]
+        }
+      },
+      {
+        "uid": "blackarch-forensic-search-2026-09-05",
+        "id": "05",
+        "title": "核对仓库候选版本",
+        "description": "在滚动发行版环境中记录候选包版本，理解仓库查询结果与本机已安装版本的区别。",
+        "target": "blackarch-repository",
+        "hint": "运行 pacman -Ss blackarch-forensic，记录包名、版本和仓库分类。",
+        "command": "pacman -Ss blackarch-forensic",
+        "requiredCourseId": 3,
+        "difficulty": "基础",
+        "knowledge": ["候选版本", "仓库与本地数据库", "滚动更新记录"],
+        "objectives": ["读取仓库任务", "记录候选版本", "区分候选与已安装"],
+        "success": "你正确区分了仓库候选版本和本机安装状态。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 05 // PACKAGE VERSION", "目标：记录取证候选包的仓库版本。", "提示：使用 pacman -Ss blackarch-forensic"],
+          "pacman -Ss blackarch-forensic": ["blackarch/sleuthkit 4.12.1-1 [blackarch-forensic]", "blackarch/bulk-extractor 2.1.1-2 [blackarch-forensic]", "说明：-Ss 查询仓库；已安装状态应另用 pacman -Q 核对。"]
+        }
+      },
+      {
+        "uid": "blackarch-forensic-search-2026-09-06",
+        "id": "06",
+        "title": "按证据选择工具组",
+        "description": "根据模拟任务的文件取证需求筛选工具组，练习先审查成员清单再考虑安装。",
+        "target": "blackarch-repository",
+        "hint": "使用 pacman -Ss blackarch-forensic，先写出需求，再从描述中筛选。",
+        "command": "pacman -Ss blackarch-forensic",
+        "requiredCourseId": 3,
+        "difficulty": "基础",
+        "knowledge": ["工具组与单包", "证据驱动选择", "安装前审查"],
+        "objectives": ["读取仓库任务", "找到取证工具组线索", "写出安装前检查项"],
+        "success": "你完成了按证据选择工具组的流程，并列出了安装前检查项。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 06 // GROUP REVIEW", "目标：选择与文件取证任务匹配的工具组。", "提示：使用 pacman -Ss blackarch-forensic"],
+          "pacman -Ss blackarch-forensic": ["blackarch/blackarch-forensic 1-1", "    BlackArch forensic tools group", "blackarch/sleuthkit 4.12.1-1", "    File system and media management forensic tools", "建议：确认空间、依赖、快照和授权后再安装。"]
+        }
+      },
+      {
+        "uid": "blackarch-forensic-search-2026-09-07",
+        "id": "07",
+        "title": "整理 BlackArch 工具报告",
+        "description": "把工具分类搜索结果整理为可复盘的短报告，说明分类、候选包和下一步。",
+        "target": "blackarch-repository",
+        "hint": "运行 pacman -Ss blackarch-forensic，按分类、候选包、用途、下一步四项记录。",
+        "command": "pacman -Ss blackarch-forensic",
+        "requiredCourseId": 3,
+        "difficulty": "基础",
+        "knowledge": ["仓库报告", "包名不等于命令", "变更前复盘"],
+        "objectives": ["读取仓库任务", "完成分类检索", "写出工具选择报告"],
+        "success": "你的报告清楚区分了工具包、工具组和可执行命令。",
+        "terminalResponses": {
+          "cat mission.txt": ["MISSION 07 // REPOSITORY REPORT", "目标：输出 BlackArch 取证工具分类报告。", "提示：使用 pacman -Ss blackarch-forensic"],
+          "pacman -Ss blackarch-forensic": ["blackarch/sleuthkit 4.12.1-1 [blackarch-forensic]", "blackarch/bulk-extractor 2.1.1-2 [blackarch-forensic]", "blackarch/foremost 1.5.7-8 [blackarch-forensic]", "结论：包提供的命令需再用 pacman -Ql 核对。"]
+        }
       }
     ]
   }
