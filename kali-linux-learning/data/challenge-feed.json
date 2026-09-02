@@ -1,9 +1,293 @@
 {
-  "version": "2026.09.02",
-  "updatedAt": "2026-09-02",
+  "version": "2026.09.03",
+  "updatedAt": "2026-09-03",
   "title": "Security Path 练习题库",
   "source": "内置自动更新源",
   "questions": {
+    "pentoo": [
+      {
+        "uid": "pentoo-dns-loopback-2026-09",
+        "id": "02",
+        "title": "确认 DNS 只绑定回环地址",
+        "description": "找出 UDP 53 端口，解释回环绑定与实验网卡绑定的区别。",
+        "target": "192.168.56.40",
+        "hint": "先 cat mission.txt，再执行课程第 3 课讲解的 ss -tulpn，结合本题目标解读输出。",
+        "command": "ss -tulpn",
+        "requiredCourseId": 3,
+        "difficulty": "基础",
+        "knowledge": [
+          "使用 ss -tulpn 查询监听",
+          "理解 OpenRC 运行状态与启动配置",
+          "区分样本事实与真实网络验证"
+        ],
+        "objectives": [
+          "识别 UDP 监听",
+          "读取 127.0.0.1:53",
+          "说明本机通信边界"
+        ],
+        "success": "已完成监听查询；请按本题目标整理判断依据，模拟完成不代表真实设备已审计。",
+        "updatedAt": "2026-09-03",
+        "terminalResponses": {
+          "cat mission.txt": [
+            "PENTOO // 确认 DNS 只绑定回环地址",
+            "范围：仅 Pentoo 离线样本 192.168.56.40。",
+            "找出 UDP 53 端口，解释回环绑定与实验网卡绑定的区别。",
+            "练习命令：ss -tulpn"
+          ],
+          "ss -tulpn": [
+            "Netid State Local Address:Port Process",
+            "tcp LISTEN 192.168.56.40:22 users:((\"sshd\",pid=744))",
+            "udp UNCONN 127.0.0.1:53 users:((\"dnsmasq\",pid=612))",
+            "tcp LISTEN 192.168.56.40:8080 users:((\"python3\",pid=904))"
+          ]
+        },
+        "sourceLinks": [
+          {
+            "title": "Linux ss 手册",
+            "url": "https://man7.org/linux/man-pages/man8/ss.8.html"
+          },
+          {
+            "title": "OpenRC 服务管理",
+            "url": "https://github.com/OpenRC/openrc/blob/master/man/rc-service.8"
+          }
+        ]
+      },
+      {
+        "uid": "pentoo-web-listener-2026-09",
+        "id": "03",
+        "title": "定位临时 Web 服务",
+        "description": "定位 192.168.56.40:8080 及其进程，记录它对实验网卡的绑定。",
+        "target": "192.168.56.40",
+        "hint": "先 cat mission.txt，再执行课程第 3 课讲解的 ss -tulpn，结合本题目标解读输出。",
+        "command": "ss -tulpn",
+        "requiredCourseId": 3,
+        "difficulty": "基础",
+        "knowledge": [
+          "使用 ss -tulpn 查询监听",
+          "理解 OpenRC 运行状态与启动配置",
+          "区分样本事实与真实网络验证"
+        ],
+        "objectives": [
+          "识别 TCP 监听",
+          "定位 8080 的进程",
+          "记录实验网卡地址"
+        ],
+        "success": "已完成监听查询；请按本题目标整理判断依据，模拟完成不代表真实设备已审计。",
+        "updatedAt": "2026-09-03",
+        "terminalResponses": {
+          "cat mission.txt": [
+            "PENTOO // 定位临时 Web 服务",
+            "范围：仅 Pentoo 离线样本 192.168.56.40。",
+            "定位 192.168.56.40:8080 及其进程，记录它对实验网卡的绑定。",
+            "练习命令：ss -tulpn"
+          ],
+          "ss -tulpn": [
+            "Netid State Local Address:Port Process",
+            "tcp LISTEN 192.168.56.40:22 users:((\"sshd\",pid=744))",
+            "udp UNCONN 127.0.0.1:53 users:((\"dnsmasq\",pid=612))",
+            "tcp LISTEN 192.168.56.40:8080 users:((\"python3\",pid=904))"
+          ]
+        },
+        "sourceLinks": [
+          {
+            "title": "Linux ss 手册",
+            "url": "https://man7.org/linux/man-pages/man8/ss.8.html"
+          },
+          {
+            "title": "OpenRC 服务管理",
+            "url": "https://github.com/OpenRC/openrc/blob/master/man/rc-service.8"
+          }
+        ]
+      },
+      {
+        "uid": "pentoo-ssh-baseline-2026-09",
+        "id": "04",
+        "title": "保留 SSH 审计基线",
+        "description": "只读识别 SSH 监听，说明为什么用途未确认时不能随意停用管理服务。",
+        "target": "192.168.56.40",
+        "hint": "先 cat mission.txt，再执行课程第 3 课讲解的 ss -tulpn，结合本题目标解读输出。",
+        "command": "ss -tulpn",
+        "requiredCourseId": 3,
+        "difficulty": "基础",
+        "knowledge": [
+          "使用 ss -tulpn 查询监听",
+          "理解 OpenRC 运行状态与启动配置",
+          "区分样本事实与真实网络验证"
+        ],
+        "objectives": [
+          "找到 SSH 端口",
+          "关联 sshd 进程",
+          "说明变更前的用途确认"
+        ],
+        "success": "已完成监听查询；请按本题目标整理判断依据，模拟完成不代表真实设备已审计。",
+        "updatedAt": "2026-09-03",
+        "terminalResponses": {
+          "cat mission.txt": [
+            "PENTOO // 保留 SSH 审计基线",
+            "范围：仅 Pentoo 离线样本 192.168.56.40。",
+            "只读识别 SSH 监听，说明为什么用途未确认时不能随意停用管理服务。",
+            "练习命令：ss -tulpn"
+          ],
+          "ss -tulpn": [
+            "Netid State Local Address:Port Process",
+            "tcp LISTEN 192.168.56.40:22 users:((\"sshd\",pid=744))",
+            "udp UNCONN 127.0.0.1:53 users:((\"dnsmasq\",pid=612))",
+            "tcp LISTEN 192.168.56.40:8080 users:((\"python3\",pid=904))"
+          ]
+        },
+        "sourceLinks": [
+          {
+            "title": "Linux ss 手册",
+            "url": "https://man7.org/linux/man-pages/man8/ss.8.html"
+          },
+          {
+            "title": "OpenRC 服务管理",
+            "url": "https://github.com/OpenRC/openrc/blob/master/man/rc-service.8"
+          }
+        ]
+      },
+      {
+        "uid": "pentoo-exposure-boundary-2026-09",
+        "id": "05",
+        "title": "监听是否等于公网可达",
+        "description": "比较回环与实验网卡绑定，区分实际观察、推测和未验证的公网访问。",
+        "target": "192.168.56.40",
+        "hint": "先 cat mission.txt，再执行课程第 3 课讲解的 ss -tulpn，结合本题目标解读输出。",
+        "command": "ss -tulpn",
+        "requiredCourseId": 3,
+        "difficulty": "基础",
+        "knowledge": [
+          "使用 ss -tulpn 查询监听",
+          "理解 OpenRC 运行状态与启动配置",
+          "区分样本事实与真实网络验证"
+        ],
+        "objectives": [
+          "阅读授权范围",
+          "比较两类监听地址",
+          "标记公网可达性未验证"
+        ],
+        "success": "已完成监听查询；请按本题目标整理判断依据，模拟完成不代表真实设备已审计。",
+        "updatedAt": "2026-09-03",
+        "terminalResponses": {
+          "cat mission.txt": [
+            "PENTOO // 监听是否等于公网可达",
+            "范围：仅 Pentoo 离线样本 192.168.56.40。",
+            "比较回环与实验网卡绑定，区分实际观察、推测和未验证的公网访问。",
+            "练习命令：ss -tulpn"
+          ],
+          "ss -tulpn": [
+            "Netid State Local Address:Port Process",
+            "tcp LISTEN 192.168.56.40:22 users:((\"sshd\",pid=744))",
+            "udp UNCONN 127.0.0.1:53 users:((\"dnsmasq\",pid=612))",
+            "tcp LISTEN 192.168.56.40:8080 users:((\"python3\",pid=904))"
+          ]
+        },
+        "sourceLinks": [
+          {
+            "title": "Linux ss 手册",
+            "url": "https://man7.org/linux/man-pages/man8/ss.8.html"
+          },
+          {
+            "title": "OpenRC 服务管理",
+            "url": "https://github.com/OpenRC/openrc/blob/master/man/rc-service.8"
+          }
+        ]
+      },
+      {
+        "uid": "pentoo-runtime-config-2026-09",
+        "id": "06",
+        "title": "运行状态与启动配置",
+        "description": "结合第 3 课说明：ss 的监听证据反映当前状态，不替代 rc-update 的启动配置检查。",
+        "target": "192.168.56.40",
+        "hint": "先 cat mission.txt，再执行课程第 3 课讲解的 ss -tulpn，结合本题目标解读输出。",
+        "command": "ss -tulpn",
+        "requiredCourseId": 3,
+        "difficulty": "基础",
+        "knowledge": [
+          "使用 ss -tulpn 查询监听",
+          "理解 OpenRC 运行状态与启动配置",
+          "区分样本事实与真实网络验证"
+        ],
+        "objectives": [
+          "记录当前监听",
+          "区分运行与启用",
+          "列出需要追加的只读配置检查"
+        ],
+        "success": "已完成监听查询；请按本题目标整理判断依据，模拟完成不代表真实设备已审计。",
+        "updatedAt": "2026-09-03",
+        "terminalResponses": {
+          "cat mission.txt": [
+            "PENTOO // 运行状态与启动配置",
+            "范围：仅 Pentoo 离线样本 192.168.56.40。",
+            "结合第 3 课说明：ss 的监听证据反映当前状态，不替代 rc-update 的启动配置检查。",
+            "练习命令：ss -tulpn"
+          ],
+          "ss -tulpn": [
+            "Netid State Local Address:Port Process",
+            "tcp LISTEN 192.168.56.40:22 users:((\"sshd\",pid=744))",
+            "udp UNCONN 127.0.0.1:53 users:((\"dnsmasq\",pid=612))",
+            "tcp LISTEN 192.168.56.40:8080 users:((\"python3\",pid=904))"
+          ]
+        },
+        "sourceLinks": [
+          {
+            "title": "Linux ss 手册",
+            "url": "https://man7.org/linux/man-pages/man8/ss.8.html"
+          },
+          {
+            "title": "OpenRC 服务管理",
+            "url": "https://github.com/OpenRC/openrc/blob/master/man/rc-service.8"
+          }
+        ]
+      },
+      {
+        "uid": "pentoo-audit-report-2026-09",
+        "id": "07",
+        "title": "整理 Pentoo 暴露面清单",
+        "description": "按协议、地址、端口和进程整理样本清单，将事实和后续用途确认分开。",
+        "target": "192.168.56.40",
+        "hint": "先 cat mission.txt，再执行课程第 3 课讲解的 ss -tulpn，结合本题目标解读输出。",
+        "command": "ss -tulpn",
+        "requiredCourseId": 3,
+        "difficulty": "基础",
+        "knowledge": [
+          "使用 ss -tulpn 查询监听",
+          "理解 OpenRC 运行状态与启动配置",
+          "区分样本事实与真实网络验证"
+        ],
+        "objectives": [
+          "读取任务说明",
+          "提取监听事实",
+          "列出用途与边界待确认项"
+        ],
+        "success": "已完成监听查询；请按本题目标整理判断依据，模拟完成不代表真实设备已审计。",
+        "updatedAt": "2026-09-03",
+        "terminalResponses": {
+          "cat mission.txt": [
+            "PENTOO // 整理 Pentoo 暴露面清单",
+            "范围：仅 Pentoo 离线样本 192.168.56.40。",
+            "按协议、地址、端口和进程整理样本清单，将事实和后续用途确认分开。",
+            "练习命令：ss -tulpn"
+          ],
+          "ss -tulpn": [
+            "Netid State Local Address:Port Process",
+            "tcp LISTEN 192.168.56.40:22 users:((\"sshd\",pid=744))",
+            "udp UNCONN 127.0.0.1:53 users:((\"dnsmasq\",pid=612))",
+            "tcp LISTEN 192.168.56.40:8080 users:((\"python3\",pid=904))"
+          ]
+        },
+        "sourceLinks": [
+          {
+            "title": "Linux ss 手册",
+            "url": "https://man7.org/linux/man-pages/man8/ss.8.html"
+          },
+          {
+            "title": "OpenRC 服务管理",
+            "url": "https://github.com/OpenRC/openrc/blob/master/man/rc-service.8"
+          }
+        ]
+      }
+    ],
     "kali": [
       {
         "uid": "kali-service-discovery-2026-06",
