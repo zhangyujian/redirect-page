@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="在线打字练习，实时显示速度、准确率、用时和错误数。">
-  <title>打字练习</title>
+  <meta name="description" content="在线中文、英文、数字与键位打字练习，提供逐键提示、实时统计、每日目标和本地成绩记录。">
+  <title>在线打字练习｜键位指导、速度与准确率训练</title>
   <style>
     :root {
       --primary: #2196f3;
@@ -27,7 +27,7 @@
       font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
     }
 
-    button, textarea { font: inherit; }
+    button, textarea, select, input { font: inherit; }
 
     .page {
       width: min(1000px, calc(100% - 32px));
@@ -69,7 +69,7 @@
 
     .practice {
       display: grid;
-      grid-template-columns: 1fr 270px;
+      grid-template-columns: minmax(0, 1fr) 270px;
       gap: 18px;
       align-items: start;
     }
@@ -82,7 +82,7 @@
       box-shadow: 0 10px 28px rgba(28, 48, 82, 0.08);
     }
 
-    .workspace { padding: 24px; }
+    .workspace { min-width: 0; padding: 24px; }
     .stats { padding: 18px; }
 
     .workspace {
@@ -570,6 +570,9 @@
       pointer-events: none;
     }
 
+    .workspace.home-mode .typing-label { display: none; }
+    .workspace.home-mode .input-wrap { width: 1px; height: 1px; overflow: hidden; }
+
     .hint {
       min-height: 20px;
       margin: 10px 0 0;
@@ -649,6 +652,225 @@
       font-weight: 800;
     }
 
+    button:focus-visible,
+    a:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    [tabindex="0"]:focus-visible {
+      outline: 3px solid rgba(33, 150, 243, .3);
+      outline-offset: 3px;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(33, 150, 243, .12), transparent 30%),
+        radial-gradient(circle at 92% 18%, rgba(25, 181, 141, .10), transparent 28%),
+        var(--background);
+    }
+
+    .page { width: min(1120px, calc(100% - 32px)); }
+
+    .top-nav {
+      align-items: center;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, .82);
+      border: 1px solid rgba(207, 215, 229, .9);
+      border-radius: 12px;
+      backdrop-filter: blur(12px);
+    }
+
+    .back-link { min-height: 36px; display: inline-flex; align-items: center; }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.12fr) minmax(320px, .88fr);
+      gap: 24px;
+      align-items: stretch;
+      margin-bottom: 24px;
+      padding: 30px;
+      color: #fff;
+      text-align: left;
+      background: linear-gradient(135deg, #0e55b5 0%, #1687df 56%, #12a986 130%);
+      border-radius: 18px;
+      box-shadow: 0 18px 42px rgba(20, 91, 166, .2);
+    }
+
+    .hero h1 { margin-top: 8px; }
+    .hero p { max-width: 620px; color: rgba(255, 255, 255, .86); font-size: 17px; line-height: 1.8; }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before { content: ""; width: 24px; height: 2px; background: currentColor; opacity: .72; }
+
+    .hero-badges { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 20px; }
+    .hero-badges span { padding: 7px 11px; background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .22); border-radius: 99px; font-size: 14px; }
+
+    .quick-start {
+      display: grid;
+      gap: 12px;
+      padding: 20px;
+      color: var(--ink);
+      background: rgba(255, 255, 255, .96);
+      border-radius: 14px;
+      box-shadow: 0 12px 28px rgba(10, 60, 120, .12);
+    }
+
+    .quick-start > strong { font-size: 18px; }
+    .quick-start ol { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
+    .quick-start li { display: flex; align-items: center; gap: 10px; color: #475467; font-size: 15px; }
+    .quick-start li b { display: grid; place-items: center; flex: 0 0 27px; height: 27px; color: var(--primary-dark); background: #e9f4ff; border-radius: 50%; }
+
+    .start-button {
+      min-height: 46px;
+      border: 0;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--ink);
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .workspace, .stats { border-radius: 14px; }
+    .workspace { padding: 26px; }
+    .stats { position: sticky; top: 16px; padding: 20px; }
+
+    .workspace-heading,
+    .stats-heading,
+    .progress-copy {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .workspace-heading { margin-bottom: 18px; }
+    .workspace-heading h2 { margin: 4px 0 0; font-size: 22px; }
+    .section-label { color: var(--primary-dark); font-size: 12px; font-weight: 900; letter-spacing: .12em; }
+
+    .session-state {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      color: #475467;
+      background: #f6f8fb;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .session-state::before { content: ""; width: 8px; height: 8px; background: #98a2b3; border-radius: 50%; }
+    .session-state.running::before { background: var(--success); box-shadow: 0 0 0 4px rgba(27, 143, 90, .13); }
+    .session-state.paused::before { background: #f59e0b; }
+    .session-state.finished::before { background: var(--primary); }
+
+    .toolbar { padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+    .mode-button, .action-button, .image-button { min-height: 44px; }
+    .action-button:disabled { opacity: .5; cursor: not-allowed; }
+
+    .session-settings {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 10px;
+      margin: 0 0 18px;
+      padding: 13px;
+      background: #f7f9fc;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    .setting-field { display: grid; gap: 5px; color: #475467; font-size: 13px; font-weight: 800; }
+    .setting-field select { min-height: 42px; padding: 0 34px 0 11px; color: var(--ink); background: #fff; border: 1px solid #cfd7e5; border-radius: 7px; cursor: pointer; }
+    .setting-note { flex: 1 1 210px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+    .toggle-button[aria-pressed="true"] { color: #11613c; background: #eaf8f0; border-color: #9bd5b3; }
+
+    .custom-panel {
+      display: none;
+      margin-bottom: 18px;
+      padding: 16px;
+      background: #f8fbff;
+      border: 1px solid #cfe2f6;
+      border-radius: 10px;
+    }
+
+    .workspace.custom-mode .custom-panel { display: block; }
+    .custom-panel label { display: block; margin-bottom: 8px; font-weight: 800; }
+    .custom-panel textarea { min-height: 92px; font-size: 16px; }
+    .custom-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px; }
+    .custom-actions small { color: var(--muted); }
+
+    .typing-label { display: block; margin: 0 0 8px; font-weight: 800; }
+
+    .progress-panel { margin: 0 0 16px; }
+    .progress-copy { margin-bottom: 7px; color: #475467; font-size: 14px; }
+    .progress-copy strong { color: var(--primary-dark); font-size: 16px; }
+    .progress-track { height: 9px; overflow: hidden; background: #e6ebf2; border-radius: 99px; }
+    .progress-track i { display: block; width: 0; height: 100%; background: linear-gradient(90deg, var(--primary), #23b99a); border-radius: inherit; transition: width .2s ease; }
+
+    .input-wrap { position: relative; }
+    .pause-cover {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      color: #334155;
+      background: rgba(248, 250, 252, .94);
+      border: 1px solid #cfd7e5;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 800;
+      text-align: center;
+    }
+    .input-wrap.is-paused .pause-cover { display: grid; }
+
+    .stats-heading { margin-bottom: 14px; }
+    .stats-heading h2 { margin: 0; }
+    .stats-heading span { color: var(--muted); font-size: 13px; }
+    .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .stat { min-width: 0; }
+    .stat span { font-size: 26px; }
+
+    .complete { line-height: 1.6; }
+    .complete strong, .complete span { display: block; }
+    .complete span { margin: 5px 0 10px; color: #37644e; font-size: 14px; }
+    .complete .action-button { width: 100%; color: #fff; background: var(--success); border-color: var(--success); }
+
+    .daily-card, .history-card { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+    .daily-card h3, .history-card h3 { margin: 0 0 10px; font-size: 16px; }
+    .daily-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #475467; font-size: 14px; }
+    .daily-row select { min-height: 36px; padding: 0 7px; border: 1px solid #cfd7e5; border-radius: 6px; background: #fff; }
+    .daily-progress { height: 8px; margin-top: 10px; overflow: hidden; background: #e6ebf2; border-radius: 99px; }
+    .daily-progress i { display: block; height: 100%; width: 0; background: #23b99a; border-radius: inherit; }
+    .history-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+    .history-list li { display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; padding: 9px 10px; background: #f8fafc; border-radius: 7px; font-size: 13px; }
+    .history-list strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .history-list span { color: var(--primary-dark); font-weight: 800; }
+    .history-list small { grid-column: 1 / -1; color: var(--muted); }
+    .history-empty { color: var(--muted); font-size: 14px; line-height: 1.7; }
+    .privacy-note { margin: 12px 0 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+
+    .learning-tips { margin-top: 24px; }
+    .learning-tips > h2 { margin: 0 0 14px; font-size: 22px; }
+    .tip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .tip-card { padding: 18px; background: rgba(255, 255, 255, .82); border: 1px solid var(--line); border-radius: 12px; }
+    .tip-card b { display: grid; place-items: center; width: 32px; height: 32px; margin-bottom: 10px; color: var(--primary-dark); background: #e9f4ff; border-radius: 8px; }
+    .tip-card strong { display: block; margin-bottom: 6px; }
+    .tip-card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.75; }
+
     @media (max-width: 760px) {
       .page { width: min(100% - 20px, 1000px); padding-top: 24px; }
       .practice { grid-template-columns: 1fr; }
@@ -668,6 +890,29 @@
       .palm.right { right: 7%; }
       .finger { width: 24px; height: 64px; font-size: 11px; }
       .training-status { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero { grid-template-columns: 1fr; padding: 24px 20px; }
+      .hero p { font-size: 16px; }
+      .stats { position: static; order: initial; }
+      .workspace-heading, .stats-heading { align-items: flex-start; flex-direction: column; }
+      .session-settings > * { width: 100%; }
+      .setting-field select, .session-settings .action-button { width: 100%; }
+      .tip-grid { grid-template-columns: 1fr; }
+      .custom-actions { align-items: stretch; flex-direction: column; }
+      .custom-actions .action-button { width: 100%; }
+    }
+
+    @media (max-width: 460px) {
+      .page { width: min(100% - 14px, 1120px); padding-top: 12px; }
+      .top-nav { padding: 8px 10px; }
+      .workspace { padding: 16px 12px; }
+      .toolbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .mode-button, .action-button { width: 100%; padding-inline: 8px; }
+      .letter-window { overflow: hidden; }
+      .stat-grid, .training-status { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
     }
   </style>
 </head>
@@ -679,19 +924,48 @@
     </nav>
 
     <header class="hero">
-      <h1>打字练习</h1>
-      <p>选择练习内容后直接输入，系统会实时统计速度、准确率、用时和错误数。</p>
+      <div class="hero-copy">
+        <span class="eyebrow">Typing Practice</span>
+        <h1>把准确率练稳，再把速度提上来</h1>
+        <p>从基准键位到中文、英文和数字输入，逐键提示、即时纠错与本地成绩记录帮你看清每一次进步。</p>
+        <div class="hero-badges"><span>无需登录</span><span>成绩保存在当前浏览器</span><span>电脑和手机均可练习</span></div>
+      </div>
+      <div class="quick-start" aria-label="快速开始说明">
+        <strong>第一次使用？三步开始</strong>
+        <ol><li><b>1</b>选择练习类型与篇幅</li><li><b>2</b>点击输入区，输入后自动计时</li><li><b>3</b>完成一段，查看速度与准确率</li></ol>
+        <button class="start-button" id="start-practice" type="button">开始第一组练习</button>
+      </div>
     </header>
 
     <section class="practice" aria-label="打字练习工具">
       <div class="workspace" id="practice-workspace">
+        <div class="workspace-heading">
+          <div><span class="section-label">练习训练台</span><h2>选择内容，按自己的节奏练习</h2></div>
+          <span class="session-state" id="session-state" role="status">准备开始</span>
+        </div>
         <div class="toolbar" aria-label="练习类型">
-          <button class="mode-button active" type="button" data-mode="home">基准键位</button>
-          <button class="mode-button" type="button" data-mode="chinese">中文短句</button>
-          <button class="mode-button" type="button" data-mode="english">英文单词</button>
-          <button class="mode-button" type="button" data-mode="number">数字符号</button>
+          <button class="mode-button active" type="button" data-mode="home" aria-pressed="true">基准键位</button>
+          <button class="mode-button" type="button" data-mode="chinese" aria-pressed="false">中文短句</button>
+          <button class="mode-button" type="button" data-mode="english" aria-pressed="false">英文单词</button>
+          <button class="mode-button" type="button" data-mode="number" aria-pressed="false">数字符号</button>
+          <button class="mode-button" type="button" data-mode="custom" aria-pressed="false">自定义文本</button>
           <button class="action-button primary" id="next-text" type="button">换一段</button>
           <button class="action-button" id="reset" type="button">重置</button>
+        </div>
+
+        <div class="session-settings" aria-label="练习设置">
+          <label class="setting-field" for="practice-length">练习篇幅
+            <select id="practice-length"><option value="1">短篇 · 1 组</option><option value="2" selected>标准 · 2 组</option><option value="3">进阶 · 3 组</option></select>
+          </label>
+          <button class="action-button toggle-button" id="sound-toggle" type="button" aria-pressed="true">按键声音：开</button>
+          <button class="action-button" id="pause" type="button" disabled>暂停计时</button>
+          <p class="setting-note">快捷键：练习中按 <b>Esc</b> 可暂停或继续。英文练习不区分大小写。</p>
+        </div>
+
+        <div class="custom-panel" id="custom-panel" hidden>
+          <label for="custom-text">粘贴或输入你想练习的内容</label>
+          <textarea id="custom-text" maxlength="500" rows="3" placeholder="最多 500 个字符。内容只在当前页面使用，不会上传。"></textarea>
+          <div class="custom-actions"><small id="custom-count">0 / 500 字符</small><button class="action-button primary" id="apply-custom" type="button">使用这段文本</button></div>
         </div>
 
         <div class="home-practice-row" aria-label="基准键位练习分类">
@@ -718,7 +992,7 @@
             </div>
             <button class="image-button" id="toggle-guide-image" type="button">隐藏图片</button>
           </div>
-          <img class="guide-image" src="images/typing-home-row-guide.png" alt="基准键位键盘和手指位置示意图">
+          <img class="guide-image" src="images/typing-home-row-guide.svg" alt="基准键位键盘和手指位置示意图">
           <div class="hand-demo" id="hand-demo">
             <div class="demo-top">
               <div class="demo-title">
@@ -747,8 +1021,16 @@
           </div>
         </div>
 
+        <div class="progress-panel">
+          <div class="progress-copy"><span>本段完成进度</span><strong id="progress-label">0%</strong></div>
+          <div class="progress-track" id="progress-track" role="progressbar" aria-label="本段完成进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="progress-fill"></i></div>
+        </div>
         <div class="target" id="target-text" aria-label="练习文本"></div>
-        <textarea class="typing-input" id="typing-input" autocomplete="off" spellcheck="false" placeholder="请在这里输入上方内容，开始输入后自动计时。"></textarea>
+        <label class="typing-label" for="typing-input">在这里输入</label>
+        <div class="input-wrap" id="input-wrap">
+          <textarea class="typing-input" id="typing-input" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="hint" placeholder="请在这里输入上方内容，开始输入后自动计时。"></textarea>
+          <div class="pause-cover" id="pause-cover">练习已暂停，点击“继续计时”或按 Esc 返回</div>
+        </div>
         <div class="training-status" aria-label="键位练习统计">
           <div><b>输入字数</b><span id="status-typed">0</span></div>
           <div><b>文章字数</b><span id="status-total">0</span></div>
@@ -760,15 +1042,35 @@
       </div>
 
       <aside class="stats" aria-label="练习结果">
-        <h2>实时结果</h2>
+        <div class="stats-heading"><h2>实时结果</h2><span>本次练习</span></div>
         <div class="stat-grid">
           <div class="stat"><b>速度</b><span id="speed">0</span> 字/分</div>
           <div class="stat"><b>准确率</b><span id="accuracy">100%</span></div>
           <div class="stat"><b>用时</b><span id="elapsed">0</span> 秒</div>
           <div class="stat"><b>错误数</b><span id="errors">0</span></div>
         </div>
-        <div class="complete" id="complete">完成！可以换一段继续练习。</div>
+        <div class="complete" id="complete" role="status" aria-live="polite"><strong>本段完成</strong><span id="complete-summary">成绩已记录，可以继续下一段。</span><button class="action-button" id="continue-practice" type="button">继续下一段</button></div>
+        <section class="daily-card" aria-label="每日目标">
+          <h3>今日练习目标</h3>
+          <div class="daily-row"><span><strong id="daily-count">0</strong> / <span id="daily-goal-label">3</span> 段</span><label>目标 <select id="daily-goal"><option value="3">3 段</option><option value="5">5 段</option><option value="10">10 段</option></select></label></div>
+          <div class="daily-progress" aria-hidden="true"><i id="daily-progress-fill"></i></div>
+        </section>
+        <section class="history-card" aria-label="最近成绩">
+          <h3>最近完成</h3>
+          <ol class="history-list" id="history-list"></ol>
+          <p class="history-empty" id="history-empty">完成第一段后，这里会显示最近成绩。</p>
+        </section>
+        <p class="privacy-note">隐私说明：自定义文本和练习成绩不会上传；最近成绩仅保存在当前浏览器中。</p>
       </aside>
+    </section>
+
+    <section class="learning-tips" aria-labelledby="tips-title">
+      <h2 id="tips-title">练得更稳的三个方法</h2>
+      <div class="tip-grid">
+        <article class="tip-card"><b>01</b><strong>准确率先达到 95%</strong><p>如果错误较多，先降低速度并缩短篇幅。稳定的正确动作比短时间冲速更有价值。</p></article>
+        <article class="tip-card"><b>02</b><strong>每次练习 5–10 分钟</strong><p>保持肩膀和手腕放松，眼睛看屏幕，让手指逐渐形成稳定的键位记忆。</p></article>
+        <article class="tip-card"><b>03</b><strong>关注趋势，不追单次峰值</strong><p>结合最近成绩看准确率是否稳定，再逐步增加篇幅和复杂度。</p></article>
+      </div>
     </section>
   </main>
 
@@ -800,19 +1102,39 @@
       chinese: [
         "每天坚持练习十分钟，打字速度会越来越稳定。",
         "准确率比速度更重要，先打准，再逐步提高节奏。",
-        "保持手指放松，眼睛看屏幕，不要频繁低头看键盘。"
+        "保持手指放松，眼睛看屏幕，不要频繁低头看键盘。",
+        "把注意力放在当前字符上，错误减少后速度自然会提升。",
+        "短时间专注练习，再停下来活动手腕，比长时间硬撑更有效。",
+        "记录每次练习的准确率，通过稳定重复建立可靠的键位记忆。"
       ],
       english: [
         "practice makes typing faster and more accurate",
         "focus on steady rhythm before chasing high speed",
-        "small daily habits create visible progress over time"
+        "small daily habits create visible progress over time",
+        "relaxed hands and careful keystrokes build lasting skill",
+        "accuracy creates confidence and confidence supports speed",
+        "keep your eyes on the screen and return to the home row"
       ],
       number: [
         "13579 24680 2026-06-23 18:30",
         "A1B2-C3D4-E5F6 88.60% 192.168.66.18",
-        "10086 95588 400-800-1234 #2026"
+        "10086 95588 400-800-1234 #2026",
+        "09:45 12.50% 3,680.00 010-12345678",
+        "172.16.20.8 / 255.255.255.0 / port:443",
+        "INV-2026-0908 #A72 6*8=48 +86 138-0000-0000"
       ]
     };
+
+    const modeLabels = {
+      home: "基准键位",
+      chinese: "中文短句",
+      english: "英文单词",
+      number: "数字符号",
+      custom: "自定义文本"
+    };
+
+    const defaultCustomText = "把你正在学习的段落放到这里，用熟悉的内容练习稳定输入。";
+    const storageKey = "blvbtc-typing-progress-v2";
 
     const targetText = document.getElementById("target-text");
     const input = document.getElementById("typing-input");
@@ -842,6 +1164,62 @@
     const keyboardStage = document.getElementById("visual-keyboard");
     const nextKeyLabel = document.getElementById("next-key-label");
     const playHandDemo = document.getElementById("play-hand-demo");
+    const startPracticeButton = document.getElementById("start-practice");
+    const practiceLengthSelect = document.getElementById("practice-length");
+    const soundToggle = document.getElementById("sound-toggle");
+    const pauseButton = document.getElementById("pause");
+    const sessionState = document.getElementById("session-state");
+    const customPanel = document.getElementById("custom-panel");
+    const customTextInput = document.getElementById("custom-text");
+    const customCount = document.getElementById("custom-count");
+    const applyCustomButton = document.getElementById("apply-custom");
+    const inputWrap = document.getElementById("input-wrap");
+    const pauseCover = document.getElementById("pause-cover");
+    const progressLabel = document.getElementById("progress-label");
+    const progressTrack = document.getElementById("progress-track");
+    const progressFill = document.getElementById("progress-fill");
+    const completeSummary = document.getElementById("complete-summary");
+    const continuePracticeButton = document.getElementById("continue-practice");
+    const dailyCount = document.getElementById("daily-count");
+    const dailyGoalLabel = document.getElementById("daily-goal-label");
+    const dailyGoalSelect = document.getElementById("daily-goal");
+    const dailyProgressFill = document.getElementById("daily-progress-fill");
+    const historyList = document.getElementById("history-list");
+    const historyEmpty = document.getElementById("history-empty");
+
+    function localDateKey(date = new Date()) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function readProgress() {
+      const fallback = { date: localDateKey(), dailyCount: 0, dailyGoal: 3, soundEnabled: true, history: [] };
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey));
+        if (!saved || typeof saved !== "object") return fallback;
+        return {
+          ...fallback,
+          ...saved,
+          dailyCount: saved.date === localDateKey() ? Number(saved.dailyCount) || 0 : 0,
+          date: localDateKey(),
+          history: Array.isArray(saved.history) ? saved.history.slice(0, 5) : []
+        };
+      } catch {
+        return fallback;
+      }
+    }
+
+    let progressData = readProgress();
+
+    function saveProgress() {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(progressData));
+      } catch {
+        // The practice tool continues to work when browser storage is unavailable.
+      }
+    }
 
     let mode = "home";
     let homePractice = homePracticeSelect.value;
@@ -855,6 +1233,13 @@
     let demoTimer = null;
     let audioContext = null;
     let errorTimer = null;
+    let practiceLength = Number(practiceLengthSelect.value);
+    let customTextValue = defaultCustomText;
+    let soundEnabled = progressData.soundEnabled !== false;
+    let isPaused = false;
+    let pausedAt = null;
+    let totalPausedMs = 0;
+    let sessionSaved = false;
 
     const keyRows = [
       { className: "key-row-top", keys: ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"] },
@@ -908,12 +1293,18 @@
     }
 
     function currentTextList() {
+      if (mode === "custom") return [customTextValue];
       return mode === "home" ? homePracticeTexts[homePractice] : texts[mode];
     }
 
     function currentText() {
       const list = currentTextList();
-      return list[index] || list[0] || "";
+      if (mode === "custom") return customTextValue;
+      const count = Math.min(practiceLength, list.length);
+      const separator = mode === "chinese" ? "" : " ";
+      return Array.from({ length: count }, (_, offset) => list[(index + offset) % list.length] || "")
+        .filter(Boolean)
+        .join(separator);
     }
 
     function currentHomePracticeLabel() {
@@ -982,7 +1373,7 @@
     }
 
     function playTypingFeedback(event) {
-      if (demoPlaying || event.ctrlKey || event.altKey || event.metaKey || event.isComposing) return;
+      if (!soundEnabled || demoPlaying || isPaused || event.ctrlKey || event.altKey || event.metaKey || event.isComposing) return;
       if (!isPrintableKey(event.key)) return;
 
       const expectedKey = expectedGuideKey();
@@ -1065,14 +1456,22 @@
       if (mode === "home") {
         return `提示：当前为${currentHomePracticeLabel()}，打错会标红并播放低音，但可以继续往后打。`;
       }
+      if (mode === "custom") {
+        return "提示：当前使用自定义文本。文本只在本页内处理，不会随成绩记录保存。";
+      }
       return "提示：打错也可以继续往后打；英文大小写不区分，空格和标点仍会参与判断。";
     }
 
     function updateGuide() {
       const isHomeMode = mode === "home";
+      const isCustomMode = mode === "custom";
       practiceWorkspace.classList.toggle("home-mode", isHomeMode);
+      practiceWorkspace.classList.toggle("custom-mode", isCustomMode);
       guideCard.classList.toggle("is-hidden", !isHomeMode);
       guideCard.classList.toggle("image-collapsed", !guideImageVisible);
+      customPanel.hidden = !isCustomMode;
+      practiceLengthSelect.disabled = isCustomMode;
+      nextTextButton.disabled = isCustomMode;
       toggleGuideImage.textContent = guideImageVisible ? "隐藏图片" : "显示图片";
       letterAd.textContent = isHomeMode ? currentHomePracticeLabel() : "键位练习";
     }
@@ -1222,6 +1621,60 @@
       updateHandDemo();
     }
 
+    function setSessionState(state, label) {
+      sessionState.className = `session-state${state ? ` ${state}` : ""}`;
+      sessionState.textContent = label;
+    }
+
+    function elapsedSeconds() {
+      if (!startedAt) return 0;
+      const end = isPaused && pausedAt ? pausedAt : Date.now();
+      return Math.max(1, Math.floor((end - startedAt - totalPausedMs) / 1000));
+    }
+
+    function renderSavedProgress() {
+      const goal = [3, 5, 10].includes(Number(progressData.dailyGoal)) ? Number(progressData.dailyGoal) : 3;
+      progressData.dailyGoal = goal;
+      dailyGoalSelect.value = String(goal);
+      dailyCount.textContent = progressData.dailyCount;
+      dailyGoalLabel.textContent = goal;
+      dailyProgressFill.style.width = `${Math.min(100, Math.round((progressData.dailyCount / goal) * 100))}%`;
+
+      historyList.innerHTML = "";
+      historyEmpty.hidden = progressData.history.length > 0;
+      progressData.history.forEach((record) => {
+        const item = document.createElement("li");
+        const title = document.createElement("strong");
+        const score = document.createElement("span");
+        const detail = document.createElement("small");
+        const time = new Date(record.timestamp);
+        title.textContent = String(record.mode || "练习").slice(0, 30);
+        score.textContent = `${Number(record.cpm) || 0} 字/分`;
+        detail.textContent = `${Number(record.accuracy) || 0}% 准确率 · ${Number(record.seconds) || 0} 秒 · ${Number(record.characters) || 0} 字符 · ${Number.isNaN(time.getTime()) ? "最近" : time.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}`;
+        item.append(title, score, detail);
+        historyList.appendChild(item);
+      });
+    }
+
+    function saveCompletedSession(result) {
+      if (sessionSaved) return;
+      sessionSaved = true;
+      if (progressData.date !== localDateKey()) progressData.dailyCount = 0;
+      progressData.date = localDateKey();
+      progressData.dailyCount += 1;
+      progressData.history = [{
+        timestamp: Date.now(),
+        mode: modeLabels[mode],
+        cpm: result.cpm,
+        accuracy: result.percent,
+        seconds: result.seconds,
+        characters: result.targetLength,
+        errors: result.wrong
+      }, ...progressData.history].slice(0, 5);
+      saveProgress();
+      renderSavedProgress();
+    }
+
     function calculateStats() {
       const typed = chars(input.value);
       const target = chars(currentText());
@@ -1236,7 +1689,7 @@
         }
       });
 
-      const seconds = startedAt ? Math.max(1, Math.floor((Date.now() - startedAt) / 1000)) : 0;
+      const seconds = elapsedSeconds();
       const minutes = Math.max(seconds / 60, 1 / 60);
       const percent = typed.length ? Math.round((correct / typed.length) * 100) : 100;
       const cpm = Math.round(correct / minutes);
@@ -1251,15 +1704,28 @@
       statusTime.textContent = formatClock(seconds);
       statusAccuracy.textContent = `${percent}%`;
       statusProgress.textContent = `${progress}%`;
+      progressLabel.textContent = `${progress}%`;
+      progressFill.style.width = `${progress}%`;
+      progressTrack.setAttribute("aria-valuenow", progress);
 
-      const isComplete = typed.length >= target.length;
+      const isComplete = target.length > 0 && typed.length >= target.length;
       if (isComplete && !finished) {
         finished = true;
         clearInterval(timer);
+        timer = null;
+        isPaused = false;
+        pausedAt = null;
+        input.readOnly = false;
+        inputWrap.classList.remove("is-paused");
+        pauseButton.disabled = true;
+        pauseButton.textContent = "暂停计时";
+        setSessionState("finished", "本段已完成");
+        completeSummary.textContent = `${cpm} 字/分 · ${percent}% 准确率 · ${seconds} 秒 · ${wrong} 个错误`;
         complete.classList.add("show");
         hint.textContent = wrong > 0
           ? "已完成，本次有错字；可以点击“换一段”继续练习。"
           : "完成后可以点击“换一段”继续练习。";
+        saveCompletedSession({ cpm, percent, seconds, wrong, targetLength: target.length });
       }
     }
 
@@ -1267,18 +1733,31 @@
       if (!startedAt && input.value.length > 0) {
         startedAt = Date.now();
         timer = setInterval(calculateStats, 500);
+        pauseButton.disabled = false;
+        setSessionState("running", "练习进行中");
       }
       renderTarget();
       calculateStats();
     }
 
-    function resetPractice(keepText = true) {
+    function resetPractice(keepText = true, focusTarget = true) {
       stopHandDemo(false);
       clearInterval(timer);
       timer = null;
       startedAt = null;
       finished = false;
+      isPaused = false;
+      pausedAt = null;
+      totalPausedMs = 0;
+      sessionSaved = false;
       input.value = "";
+      input.readOnly = false;
+      inputWrap.classList.remove("is-paused");
+      pauseButton.disabled = true;
+      pauseButton.textContent = "暂停计时";
+      if (!keepText && mode !== "custom") {
+        index = (index + 1) % currentTextList().length;
+      }
       speed.textContent = "0";
       accuracy.textContent = "100%";
       elapsed.textContent = "0";
@@ -1289,14 +1768,43 @@
       statusTime.textContent = "00:00:00";
       statusAccuracy.textContent = "100%";
       statusProgress.textContent = "0%";
+      progressLabel.textContent = "0%";
+      progressFill.style.width = "0%";
+      progressTrack.setAttribute("aria-valuenow", "0");
       complete.classList.remove("show");
+      setSessionState("", mode === "custom" ? "等待应用文本" : "准备开始");
       hint.textContent = defaultHint();
-      if (!keepText) {
-        index = (index + 1) % currentTextList().length;
-      }
       updateGuide();
       renderTarget();
-      input.focus();
+      if (focusTarget) {
+        if (mode === "custom") customTextInput.focus();
+        else input.focus();
+      }
+    }
+
+    function togglePause() {
+      if (!startedAt || finished) return;
+      if (isPaused) {
+        totalPausedMs += Date.now() - pausedAt;
+        pausedAt = null;
+        isPaused = false;
+        input.readOnly = false;
+        inputWrap.classList.remove("is-paused");
+        pauseButton.textContent = "暂停计时";
+        setSessionState("running", "练习进行中");
+        timer = setInterval(calculateStats, 500);
+        input.focus();
+      } else {
+        calculateStats();
+        clearInterval(timer);
+        timer = null;
+        pausedAt = Date.now();
+        isPaused = true;
+        input.readOnly = true;
+        inputWrap.classList.add("is-paused");
+        pauseButton.textContent = "继续计时";
+        setSessionState("paused", "练习已暂停");
+      }
     }
 
     function stopHandDemo(refresh = true) {
@@ -1337,7 +1845,11 @@
       button.addEventListener("click", () => {
         mode = button.dataset.mode;
         index = 0;
-        modeButtons.forEach((item) => item.classList.toggle("active", item === button));
+        modeButtons.forEach((item) => {
+          const active = item === button;
+          item.classList.toggle("active", active);
+          item.setAttribute("aria-pressed", String(active));
+        });
         resetPractice(true);
       });
     });
@@ -1348,8 +1860,59 @@
       resetPractice(true);
     });
 
+    practiceLengthSelect.addEventListener("change", () => {
+      practiceLength = Number(practiceLengthSelect.value) || 1;
+      index = 0;
+      resetPractice(true);
+    });
+
+    soundToggle.addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+      soundToggle.setAttribute("aria-pressed", String(soundEnabled));
+      soundToggle.textContent = `按键声音：${soundEnabled ? "开" : "关"}`;
+      progressData.soundEnabled = soundEnabled;
+      saveProgress();
+    });
+
+    pauseButton.addEventListener("click", togglePause);
+    pauseCover.addEventListener("click", togglePause);
+
+    customTextInput.addEventListener("input", () => {
+      customCount.textContent = `${chars(customTextInput.value).length} / 500 字符`;
+    });
+
+    applyCustomButton.addEventListener("click", () => {
+      const value = customTextInput.value.replace(/\r\n/g, "\n").trim();
+      if (!value) {
+        customCount.textContent = "请先输入至少 1 个字符";
+        customTextInput.focus();
+        return;
+      }
+      customTextValue = value;
+      customCount.textContent = `${chars(value).length} / 500 字符 · 已应用`;
+      index = 0;
+      resetPractice(true);
+      setSessionState("", "准备开始");
+      input.focus();
+    });
+
+    dailyGoalSelect.addEventListener("change", () => {
+      progressData.dailyGoal = Number(dailyGoalSelect.value) || 3;
+      saveProgress();
+      renderSavedProgress();
+    });
+
     input.addEventListener("input", update);
     input.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && startedAt && !finished) {
+        event.preventDefault();
+        togglePause();
+        return;
+      }
+      if (isPaused) {
+        event.preventDefault();
+        return;
+      }
       playTypingFeedback(event);
       const canJudgeKey =
         !demoPlaying
@@ -1387,14 +1950,26 @@
     keyboardStage.addEventListener("click", () => input.focus());
     practiceWorkspace.addEventListener("click", (event) => {
       if (event.target.closest("button, select, option, label, input, textarea")) return;
-      input.focus();
+      if (mode === "custom") customTextInput.focus();
+      else input.focus();
     });
     window.addEventListener("resize", updateHandDemo);
     nextTextButton.addEventListener("click", () => resetPractice(false));
+    continuePracticeButton.addEventListener("click", () => resetPractice(false));
     resetButton.addEventListener("click", () => resetPractice(true));
+    startPracticeButton.addEventListener("click", () => {
+      practiceWorkspace.scrollIntoView({ block: "start" });
+      if (mode === "custom") customTextInput.focus();
+      else input.focus();
+    });
 
+    customTextInput.value = customTextValue;
+    customCount.textContent = `${chars(customTextValue).length} / 500 字符`;
+    soundToggle.setAttribute("aria-pressed", String(soundEnabled));
+    soundToggle.textContent = `按键声音：${soundEnabled ? "开" : "关"}`;
     buildDemoKeyboard();
-    resetPractice(true);
+    renderSavedProgress();
+    resetPractice(true, false);
   </script>
 </body>
 </html>
