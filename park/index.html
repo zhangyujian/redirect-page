@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="自动出入场">
+<meta name="theme-color" content="#0B8F4F">
+<title>无牌车自动出入场</title>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#F2F5F8;color:#14263C;
+  padding:max(12px,env(safe-area-inset-top)) 12px 12px}
+.card{background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 6px rgba(20,38,60,.08)}
+h1{font-size:18px;margin:0 0 4px}
+.hint{font-size:11px;color:#7C8899;line-height:1.5;margin:0 0 8px}
+.row{display:flex;gap:10px;margin-top:8px}
+.btn{flex:1;height:58px;border:none;border-radius:14px;color:#fff;font-size:20px;font-weight:700;cursor:pointer}
+.btn:active{filter:brightness(.9)}
+.btn[disabled]{opacity:.4}
+.green{background:#0B8F4F}.orange{background:#E67E22}.red{background:#D93636}
+#btnStop{display:block;width:100%;height:44px;font-size:15px;margin-top:8px}
+#status{font-size:13px;font-weight:700;color:#0B8F4F;margin-top:10px;min-height:18px}
+#log{background:#E7EDF3;color:#5B6672;font:10px/1.6 ui-monospace,Menlo,monospace;
+  border-radius:8px;padding:8px;margin:10px 0 0;white-space:pre-wrap;max-height:110px;overflow:hidden}
+#overlay{position:fixed;inset:0;background:rgba(6,110,66,.92);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;z-index:9;cursor:pointer}
+#overlay .ok{font-size:76px}#overlay .t{font-size:34px;font-weight:800;color:#fff;margin-top:6px}
+#overlay .s{font-size:14px;color:#D9FFE9;margin-top:8px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>无牌车自动出入场</h1>
+  <p class="hint">点按钮后自动向车场请求开闸,提示「未识别到车辆 / 无车禁止扫码」时自动重试,直到开闸成功;
+  车辆已在场内/场外时自动停止扫码。<br>
+  iPhone:点 Safari 底部分享按钮 →「添加到主屏幕」,像 App 一样全屏使用。</p>
+  <div class="row">
+    <button id="btnEnter" class="btn green">我要进场</button>
+    <button id="btnExit" class="btn orange">我要离场</button>
+  </div>
+  <button id="btnStop" class="btn red" hidden>停止自动操作</button>
+  <div id="status">状态:待命</div>
+</div>
+<pre id="log">日志:无</pre>
+
+<div id="overlay" hidden>
+  <div class="ok">✅</div>
+  <div class="t">开闸成功</div>
+  <div class="s">道闸抬起可能延迟几秒,请立即通行(点屏幕关闭)</div>
+</div>
+
+<script>
+/* ====== 可按需调整的配置 ====== */
+var API = 'https://park.hjszhtc.com/mvcapi/v1/h5/netpay/queryFee';
+var BODIES = {
+  entry: {valuedata:'491FI21XQYJ1',parkUuid:'55C206576A7F',code:'55C206576A7F',cuid:'kbc4ahg2etbp',
+    did:'8372',urlType:'10',ioType:'0',plateNo:'无68XXAQ',openid:'ohPgov4gpVjpz66kIzKAPaxSuY_E',
+    appId:'wxf455b19ba9af3414',autoGeneratePlate:true,plateInput:1,parkType:'1',channelName:'东区摩托入口'},
+  exit:  {valuedata:'491FI21XQYJ1',parkUuid:'55C206576A7F',code:'55C206576A7F',cuid:'g2rn887e5o6q',
+    did:'8431',urlType:'10',ioType:'1',plateNo:'无68XXAQ',openid:'ohPgov4gpVjpz66kIzKAPaxSuY_E',
+    appId:'wxf455b19ba9af3414',autoGeneratePlate:true,plateInput:1,parkType:'1',channelName:'东区摩托出口'}
+};
+var RETRY_SEC = 4;      // 失败后重试间隔(秒)
+var MAX_TRY   = 30;     // 最多尝试次数
+var TIMEOUT_MS= 20000;  // 单次请求超时(毫秒)
+/* 关键词:失败→重试;已在状态→温和停止;成功→提醒通行 */
+var FAIL_WORDS = ['未识别','禁止扫码','无车','识别失败','未找到'];
+var ALREADY_WORDS = ['已进场','已入场','已在场内','已在停车场','车辆已在','请勿重复','重复扫码','已离场','已出场','不在场内','无停车记录'];
+var STOP_WORDS = ['去缴费','欠费','补缴','立即支付','停车费用','合计','查看明细'];
+/* ============================== */
+
+var $ = function(id){return document.getElementById(id)};
+var running=false, attempt=0, dir='entry', timer=null, audio=null;
+var logs=[];
+
+function now(){var d=new Date();function p(n){return n<10?'0'+n:n}return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())}
+function log(s){logs.push(now()+'  '+s);if(logs.length>200)logs.shift();$('log').textContent=logs.slice(-6).join('\n')}
+function setStatus(s){$('status').textContent='状态:'+s}
+function setUI(){$('btnEnter').disabled=running;$('btnExit').disabled=running;$('btnStop').hidden=!running}
+function containsAny(t,list){for(var i=0;i<list.length;i++){if(t.indexOf(list[i])!==-1)return list[i]}return null}
+
+function beep(){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();
+  var t=audio.currentTime,o=audio.createOscillator(),g=audio.createGain();
+  o.connect(g);g.connect(audio.destination);o.type='sine';o.frequency.value=880;
+  g.gain.setValueAtTime(.3,t);g.gain.exponentialRampToValueAtTime(.001,t+.9);
+  o.start(t);o.stop(t+.9);
+  var o2=audio.createOscillator(),g2=audio.createGain();o2.connect(g2);g2.connect(audio.destination);
+  o2.type='sine';o2.frequency.value=1320;g2.gain.setValueAtTime(.3,t+.15);g2.gain.exponentialRampToValueAtTime(.001,t+1);
+  o2.start(t+.15);o2.stop(t+1);}catch(e){}}
+
+$('btnEnter').onclick=function(){audio=audio||new (window.AudioContext||window.webkitAudioContext)();start('entry')};
+$('btnExit').onclick =function(){audio=audio||new (window.AudioContext||window.webkitAudioContext)();start('exit')};
+$('btnStop').onclick =function(){stopAll('手动停止')};
+$('overlay').onclick =function(){$('overlay').hidden=true};
+
+function start(d){if(running)return;dir=d;running=true;attempt=0;setUI();
+  log('▶ 开始自动'+(d==='exit'?'离场':'入场'));next()}
+
+function next(){
+  if(!running)return;
+  attempt++;
+  setStatus('第 '+attempt+' 次尝试:正在请求'+(dir==='exit'?'离场':'入场')+'开闸…');
+  log('第 '+attempt+' 次:请求车场接口');
+  var ctrl=new AbortController(),to=setTimeout(function(){ctrl.abort()},TIMEOUT_MS);
+  fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(BODIES[dir]),signal:ctrl.signal})
+    .then(function(r){return r.json()})
+    .then(function(j){clearTimeout(to);handle(j)})
+    .catch(function(e){clearTimeout(to);if(running)onFail('网络错误/超时')});
+}
+
+function handle(j){
+  if(!running)return;
+  var d=j.data||{},reason=(d.reason||'').trim(),rstat=d.rstat;
+  log('返回 code='+j.code+' rstat='+rstat+' qrs='+d.qrs+(reason?(' 提示:'+reason):''));
+  var al=containsAny(reason,ALREADY_WORDS);
+  if(al){
+    running=false;clearTimeout(timer);setUI();
+    var state=(dir==='exit')?'已离场':'已进场';
+    setStatus('ℹ 车辆'+state+',无需重复扫码');
+    log('ℹ 车场提示「'+al+'」— 车辆'+state+',已停止自动扫码');
+    return;
+  }
+  if(j.code!==200||d.qrs===1){onFail('车场提示「'+(reason||'失败')+'」');return}
+  if(rstat===2){var fee=(d.rmon?('¥'+(d.rmon/100).toFixed(2)):'');
+    stopAll('需缴停车费'+(fee?('('+fee+')'):'')+'后通行 — 微信扫出口码缴费,缴完再点一次');
+    setStatus('⚠ 需缴费'+fee+'后通行');alert('需缴停车费'+fee+'后才能离场\n请微信扫出口二维码缴费\n缴完后回到本页再点一次「我要离场」');return}
+  onSuccess(reason);
+}
+
+function onFail(msg){
+  if(!running)return;
+  log('✗ '+msg);
+  if(attempt>=MAX_TRY){stopAll('已达最大尝试次数 '+MAX_TRY+' 次,可再点一次继续');return}
+  var remain=RETRY_SEC;
+  (function cd(){
+    if(!running)return;
+    if(remain>0){setStatus(msg+' — '+remain+'s 后自动重试(第 '+(attempt+1)+' 次)');remain--;timer=setTimeout(cd,1000)}
+    else next();
+  })();
+}
+
+function onSuccess(reason){
+  running=false;clearTimeout(timer);setUI();
+  setStatus('✅ 开闸成功(共尝试 '+attempt+' 次)');
+  log('✅ 开闸成功'+(reason?(':' +reason):'')+' — 请立即通行');
+  $('overlay').hidden=false;beep();
+  if(navigator.vibrate)navigator.vibrate([400,200,400,200,800]);
+}
+
+function stopAll(msg){running=false;clearTimeout(timer);setUI();setStatus('已停止');log('■ '+msg)}
+
+window.addEventListener('error',function(){log('页面脚本异常,请截图反馈')});
+</script>
+</body>
+</html>
