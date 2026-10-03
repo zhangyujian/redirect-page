@@ -53,6 +53,7 @@ h1{font-size:18px;margin:0 0 4px}
   <div id="status">状态:待命</div>
   <div class="row">
     <button id="btnImport" class="mini">导入新身份链接</button>
+    <button id="btnCfg" class="mini">设置</button>
     <button id="btnReset" class="mini">恢复默认身份</button>
   </div>
   <div id="identity"></div>
@@ -60,6 +61,15 @@ h1{font-size:18px;margin:0 0 4px}
     <textarea id="taLink" placeholder="把微信里复制的车场链接粘贴到这里(需包含 openid;入口/出口链接均可,导入后进出自动统一同一身份)"></textarea>
     <button id="btnPaste2" class="pbtn">📋 粘贴剪贴板</button>
     <button id="btnSaveLink" class="pbtn">保存并统一进出身份</button>
+  </div>
+  <div id="cfgPanel" hidden>
+    <div style="font-size:12px;color:#7C8899;margin-bottom:6px">重试间隔(秒) / 最大尝试次数 / 未出场提醒(分钟,逗号分隔)</div>
+    <div class="row" style="margin-top:0">
+      <input id="cfgRetry" type="number" style="flex:1;height:36px;border:1px solid #C8D6CE;border-radius:8px;font-size:14px;padding:0 8px">
+      <input id="cfgMax" type="number" style="flex:1;height:36px;border:1px solid #C8D6CE;border-radius:8px;font-size:14px;padding:0 8px">
+      <input id="cfgRemind" type="text" style="flex:1.4;height:36px;border:1px solid #C8D6CE;border-radius:8px;font-size:14px;padding:0 8px">
+    </div>
+    <button id="btnSaveCfg" class="pbtn">保存设置</button>
   </div>
 </div>
 <pre id="log">日志:无</pre>
@@ -79,7 +89,9 @@ var PARK = {vd:'491FI21XQYJ1', pu:'55C206576A7F', appid:'wxf455b19ba9af3414',
   exitDid:'8431', exitCuid:'g2rn887e5o6q', exitCh:'东区摩托出口'};
 var DEFAULT_OPENID = 'ohPgov4gpVjpz66kIzKAPaxSuY_E';
 var DEFAULT_PLATE  = '无68XXAQ';
-var RETRY_SEC = 4, MAX_TRY = 30, TIMEOUT_MS = 20000;
+var TIMEOUT_MS = 20000;
+var CFG = { retrySec:4, maxTry:30, remind:[15,30] };
+try { var _c = JSON.parse(localStorage.getItem('parkCfg')); if(_c && _c.retrySec) CFG = _c; } catch(e){}
 var FAIL_WORDS = ['未识别','禁止扫码','无车','识别失败','未找到'];
 var ALREADY_WORDS = ['已进场','已入场','已在场内','已在停车场','车辆已在','请勿重复','重复扫码','已离场','已出场','不在场内','无停车记录'];
 var STOP_WORDS = ['去缴费','欠费','补缴','立即支付','停车费用','合计','查看明细'];
@@ -149,7 +161,18 @@ function finishImport(openId, plate){
   alert('导入成功!\n进出已统一为同一身份\n车牌:'+(plate||'未知(车场会自动识别)'));
 }
 
-$('btnImport').onclick=function(){ $('importPanel').hidden = !$('importPanel').hidden; };
+$('btnImport').onclick=function(){ $('importPanel').hidden = !$('importPanel').hidden; $('cfgPanel').hidden=true; };
+$('btnCfg').onclick=function(){
+  $('cfgPanel').hidden = !$('cfgPanel').hidden; $('importPanel').hidden=true;
+  $('cfgRetry').value=CFG.retrySec; $('cfgMax').value=CFG.maxTry; $('cfgRemind').value=CFG.remind.join(',');
+};
+$('btnSaveCfg').onclick=function(){
+  var r=parseInt($('cfgRetry').value,10), m=parseInt($('cfgMax').value,10);
+  var rm=$('cfgRemind').value.split(',').map(function(x){return parseInt(x.trim(),10)}).filter(function(x){return x>0});
+  CFG.retrySec=(r>0?r:4); CFG.maxTry=(m>0?m:30); CFG.remind=(rm.length?rm:[15,30]);
+  try{ localStorage.setItem('parkCfg', JSON.stringify(CFG)); }catch(e){}
+  $('cfgPanel').hidden=true; log('设置已保存:间隔'+CFG.retrySec+'s 次数'+CFG.maxTry+' 提醒'+CFG.remind.join('/')); alert('设置已保存');
+};
 $('btnReset').onclick=function(){
   BODIES = DEFAULT_BODIES;
   try{ localStorage.removeItem('parkBodies'); }catch(e){}
@@ -173,7 +196,11 @@ function beep(){try{audio=audio||new (window.AudioContext||window.webkitAudioCon
   o2.type='sine';o2.frequency.value=1320;g2.gain.setValueAtTime(.3,t+.15);g2.gain.exponentialRampToValueAtTime(.001,t+1);
   o2.start(t+.15);o2.stop(t+1);}catch(e){}}
 
-$('btnEnter').onclick=function(){audio=audio||new (window.AudioContext||window.webkitAudioContext)();start('entry')};
+$('btnEnter').onclick=function(){
+  audio=audio||new (window.AudioContext||window.webkitAudioContext)();
+  if(window.Notification && Notification.permission==='default'){ try{ Notification.requestPermission(); }catch(e){} }
+  start('entry');
+};
 $('btnExit').onclick =function(){audio=audio||new (window.AudioContext||window.webkitAudioContext)();start('exit')};
 $('btnStop').onclick =function(){stopAll('手动停止')};
 $('overlay').onclick =function(){$('overlay').hidden=true};
@@ -216,13 +243,35 @@ function handle(j){
 function onFail(msg){
   if(!running)return;
   log('✗ '+msg);
-  if(attempt>=MAX_TRY){stopAll('已达最大尝试次数 '+MAX_TRY+' 次,可再点一次继续');return}
-  var remain=RETRY_SEC;
+  if(attempt>=CFG.maxTry){stopAll('已达最大尝试次数 '+CFG.maxTry+' 次,可再点一次继续');return}
+  var remain=CFG.retrySec;
   (function cd(){
     if(!running)return;
     if(remain>0){setStatus(msg+' — '+remain+'s 后自动重试(第 '+(attempt+1)+' 次)');remain--;timer=setTimeout(cd,1000)}
     else next();
   })();
+}
+
+/* 进场成功后的未出场提醒(页面需保持打开;离场成功自动取消) */
+var remindTimers=[];
+function scheduleReminders(){
+  cancelReminders(false);
+  CFG.remind.forEach(function(mn){
+    remindTimers.push(setTimeout(function(){
+      var body='车辆已进场 '+mn+' 分钟未出场'+(mn>=30?',超出免费时段持续计费,请及时离场':';临近计费,若已离场请忽略');
+      beep(); if(navigator.vibrate)navigator.vibrate([400,200,400]);
+      log('⏰ '+body);
+      setStatus('⏰ '+body);
+      if(window.Notification && Notification.permission==='granted'){
+        try{ new Notification('已进场 '+mn+' 分钟',{body:body}); }catch(e){}
+      }
+    }, mn*60*1000));
+  });
+  if(CFG.remind.length) log('已设置出场提醒:'+CFG.remind.join('/')+' 分钟(需保持本页打开;离场成功自动取消)');
+}
+function cancelReminders(say){
+  remindTimers.forEach(clearTimeout); remindTimers=[];
+  if(say) log('已出场,出场提醒已取消');
 }
 
 function onSuccess(reason){
@@ -231,6 +280,7 @@ function onSuccess(reason){
   log('✅ 开闸成功'+(reason?(':' +reason):'')+' — 请立即通行');
   $('overlay').hidden=false;beep();
   if(navigator.vibrate)navigator.vibrate([400,200,400,200,800]);
+  if(dir==='exit'){ cancelReminders(true); } else { scheduleReminders(); }
 }
 
 function stopAll(msg){running=false;clearTimeout(timer);setUI();setStatus('已停止');log('■ '+msg)}
