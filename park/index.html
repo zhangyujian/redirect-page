@@ -26,6 +26,13 @@ h1{font-size:18px;margin:0 0 4px}
 #status{font-size:13px;font-weight:700;color:#0B8F4F;margin-top:10px;min-height:18px}
 #log{background:#E7EDF3;color:#5B6672;font:10px/1.6 ui-monospace,Menlo,monospace;
   border-radius:8px;padding:8px;margin:10px 0 0;white-space:pre-wrap;max-height:110px;overflow:hidden}
+.mini{flex:1;height:38px;border:1px solid #0B8F4F;background:#fff;color:#0B8F4F;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer}
+#importPanel{margin-top:10px;background:#F0F7F3;border:1px dashed #9CCDB4;border-radius:10px;padding:10px}
+#taLink{width:100%;height:64px;border:1px solid #C8D6CE;border-radius:8px;font-size:12px;padding:8px;resize:vertical}
+#identity{font-size:12px;color:#0B8F4F;font-weight:600;margin-top:8px}
+.pbtn{height:38px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px}
+#btnSaveLink{width:100%;background:#0B8F4F;color:#fff}
+#btnPaste2{width:100%;background:#E7EDF3;color:#14263C}
 #overlay{position:fixed;inset:0;background:rgba(6,110,66,.92);display:flex;flex-direction:column;
   align-items:center;justify-content:center;z-index:9;cursor:pointer}
 #overlay .ok{font-size:76px}#overlay .t{font-size:34px;font-weight:800;color:#fff;margin-top:6px}
@@ -36,15 +43,24 @@ h1{font-size:18px;margin:0 0 4px}
 <body>
 <div class="card">
   <h1>无牌车自动出入场</h1>
-  <p class="hint">点按钮后自动向车场请求开闸,提示「未识别到车辆 / 无车禁止扫码」时自动重试,直到开闸成功;
-  车辆已在场内/场外时自动停止扫码。<br>
-  iPhone:点 Safari 底部分享按钮 →「添加到主屏幕」,像 App 一样全屏使用。</p>
+  <p class="hint">点按钮自动向车场请求开闸,「未识别到车辆/无车禁止扫码」自动重试直到开闸;
+  车辆已在场内/场外自动停止扫码。<br>iPhone:Safari 分享 →「添加到主屏幕」像 App 使用。</p>
   <div class="row">
     <button id="btnEnter" class="btn green">我要进场</button>
     <button id="btnExit" class="btn orange">我要离场</button>
   </div>
   <button id="btnStop" class="btn red" hidden>停止自动操作</button>
   <div id="status">状态:待命</div>
+  <div class="row">
+    <button id="btnImport" class="mini">导入新身份链接</button>
+    <button id="btnReset" class="mini">恢复默认身份</button>
+  </div>
+  <div id="identity"></div>
+  <div id="importPanel" hidden>
+    <textarea id="taLink" placeholder="把微信里复制的车场链接粘贴到这里(需包含 openid;入口/出口链接均可,导入后进出自动统一同一身份)"></textarea>
+    <button id="btnPaste2" class="pbtn">📋 粘贴剪贴板</button>
+    <button id="btnSaveLink" class="pbtn">保存并统一进出身份</button>
+  </div>
 </div>
 <pre id="log">日志:无</pre>
 
@@ -55,24 +71,32 @@ h1{font-size:18px;margin:0 0 4px}
 </div>
 
 <script>
-/* ====== 可按需调整的配置 ====== */
+/* ====== 默认配置(本车场固定设备参数) ====== */
 var API = 'https://park.hjszhtc.com/mvcapi/v1/h5/netpay/queryFee';
-var BODIES = {
-  entry: {valuedata:'491FI21XQYJ1',parkUuid:'55C206576A7F',code:'55C206576A7F',cuid:'kbc4ahg2etbp',
-    did:'8372',urlType:'10',ioType:'0',plateNo:'无68XXAQ',openid:'ohPgov4gpVjpz66kIzKAPaxSuY_E',
-    appId:'wxf455b19ba9af3414',autoGeneratePlate:true,plateInput:1,parkType:'1',channelName:'东区摩托入口'},
-  exit:  {valuedata:'491FI21XQYJ1',parkUuid:'55C206576A7F',code:'55C206576A7F',cuid:'g2rn887e5o6q',
-    did:'8431',urlType:'10',ioType:'1',plateNo:'无68XXAQ',openid:'ohPgov4gpVjpz66kIzKAPaxSuY_E',
-    appId:'wxf455b19ba9af3414',autoGeneratePlate:true,plateInput:1,parkType:'1',channelName:'东区摩托出口'}
-};
-var RETRY_SEC = 4;      // 失败后重试间隔(秒)
-var MAX_TRY   = 30;     // 最多尝试次数
-var TIMEOUT_MS= 20000;  // 单次请求超时(毫秒)
-/* 关键词:失败→重试;已在状态→温和停止;成功→提醒通行 */
+var API_QR = 'https://park.hjszhtc.com/mvcapi/v1/h5/netpay/queryQrcodeEnabled';
+var PARK = {vd:'491FI21XQYJ1', pu:'55C206576A7F', appid:'wxf455b19ba9af3414',
+  entryDid:'8372', entryCuid:'kbc4ahg2etbp', entryCh:'东区摩托入口',
+  exitDid:'8431', exitCuid:'g2rn887e5o6q', exitCh:'东区摩托出口'};
+var DEFAULT_OPENID = 'ohPgov4gpVjpz66kIzKAPaxSuY_E';
+var DEFAULT_PLATE  = '无68XXAQ';
+var RETRY_SEC = 4, MAX_TRY = 30, TIMEOUT_MS = 20000;
 var FAIL_WORDS = ['未识别','禁止扫码','无车','识别失败','未找到'];
 var ALREADY_WORDS = ['已进场','已入场','已在场内','已在停车场','车辆已在','请勿重复','重复扫码','已离场','已出场','不在场内','无停车记录'];
 var STOP_WORDS = ['去缴费','欠费','补缴','立即支付','停车费用','合计','查看明细'];
-/* ============================== */
+/* ========================================= */
+
+function makeBodies(openId, plate){
+  var b = {valuedata:PARK.vd, parkUuid:PARK.pu, code:PARK.pu, urlType:'10',
+    appId:PARK.appid, autoGeneratePlate:true, plateInput:1, parkType:'1',
+    openid:openId, plateNo:plate};
+  return {
+    entry: Object.assign({cuid:PARK.entryCuid, did:PARK.entryDid, ioType:'0', channelName:PARK.entryCh}, b),
+    exit:  Object.assign({cuid:PARK.exitCuid,  did:PARK.exitDid,  ioType:'1', channelName:PARK.exitCh}, b)
+  };
+}
+var DEFAULT_BODIES = makeBodies(DEFAULT_OPENID, DEFAULT_PLATE);
+var BODIES;
+try { BODIES = JSON.parse(localStorage.getItem('parkBodies')) || DEFAULT_BODIES; } catch(e){ BODIES = DEFAULT_BODIES; }
 
 var $ = function(id){return document.getElementById(id)};
 var running=false, attempt=0, dir='entry', timer=null, audio=null;
@@ -83,7 +107,63 @@ function log(s){logs.push(now()+'  '+s);if(logs.length>200)logs.shift();$('log')
 function setStatus(s){$('status').textContent='状态:'+s}
 function setUI(){$('btnEnter').disabled=running;$('btnExit').disabled=running;$('btnStop').hidden=!running}
 function containsAny(t,list){for(var i=0;i<list.length;i++){if(t.indexOf(list[i])!==-1)return list[i]}return null}
+function showIdentity(){
+  var p = BODIES.entry.plateNo || '(未知车牌)';
+  var o = (BODIES.entry.openid||'').slice(0,10)+'…';
+  $('identity').textContent = '当前身份车牌:'+p+'  ('+o+')';
+}
 
+/* ====== 导入链接 ====== */
+function dec(s){ if(!s) return '';
+  try{ var a=decodeURIComponent(s); try{ var b=decodeURIComponent(a); return b; }catch(e){ return a; } }catch(e){ return s; } }
+
+function importLink(raw){
+  var url = (raw||'').trim();
+  if(!/^https?:\/\//.test(url)){ alert('这不是链接,请粘贴完整的网址'); return; }
+  if(/\/N\/channel\//.test(url) && !/[?&]open[Ii]d=/.test(url)){
+    alert('这是海报上的短链接,不含身份信息。\n请先在微信里扫码打开页面,再点右上角菜单 →「复制链接」,粘贴那个完整链接。'); return;
+  }
+  var m = url.match(/[?&]open[Ii]d=([^&]+)/);
+  if(!m){ alert('链接里没有身份信息(openid)。\n请用微信扫码打开页面后,右上角「复制链接」再粘贴。'); return; }
+  var openId = m[1];
+  var pu = dec((url.match(/[?&]parkUuid=([^&]+)/)||[])[1]) || PARK.pu;
+  if(pu !== PARK.pu){ alert('不是本车场('+pu+')的链接,未导入'); return; }
+  var plate = dec((url.match(/[?&]plateNo=([^&]+)/)||[])[1]) || '';
+  if(plate){ finishImport(openId, plate); }
+  else {
+    // 链接里没带车牌,向车场查询该身份绑定的车牌
+    log('正在向车场查询该身份的车牌…');
+    fetch(API_QR,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({valuedata:PARK.vd,parkUuid:PARK.pu,cuid:PARK.exitCuid,urlType:'10',openId:openId,appId:PARK.appid})})
+      .then(function(r){return r.json()})
+      .then(function(j){ finishImport(openId, (j.data&&j.data.plateNo)?j.data.plateNo:'') })
+      .catch(function(){ finishImport(openId,'') });
+  }
+}
+function finishImport(openId, plate){
+  BODIES = makeBodies(openId, plate||'');
+  try{ localStorage.setItem('parkBodies', JSON.stringify(BODIES)); }catch(e){}
+  showIdentity();
+  $('importPanel').hidden = true;
+  log('✅ 已导入新身份,进/出已统一  车牌:'+(plate||'未知'));
+  alert('导入成功!\n进出已统一为同一身份\n车牌:'+(plate||'未知(车场会自动识别)'));
+}
+
+$('btnImport').onclick=function(){ $('importPanel').hidden = !$('importPanel').hidden; };
+$('btnReset').onclick=function(){
+  BODIES = DEFAULT_BODIES;
+  try{ localStorage.removeItem('parkBodies'); }catch(e){}
+  showIdentity(); log('已恢复默认身份'); alert('已恢复默认身份(无68XXAQ)');
+};
+$('btnPaste2').onclick=function(){
+  if(navigator.clipboard && navigator.clipboard.readText){
+    navigator.clipboard.readText().then(function(t){ if(t&&t.trim()){ $('taLink').value=t.trim(); } else { alert('剪贴板是空的'); } })
+      .catch(function(){ alert('无法读取剪贴板,请长按输入框粘贴'); });
+  } else { alert('此浏览器不支持一键粘贴,请长按输入框粘贴'); }
+};
+$('btnSaveLink').onclick=function(){ importLink($('taLink').value); };
+
+/* ====== 主流程 ====== */
 function beep(){try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();
   var t=audio.currentTime,o=audio.createOscillator(),g=audio.createGain();
   o.connect(g);g.connect(audio.destination);o.type='sine';o.frequency.value=880;
@@ -155,7 +235,7 @@ function onSuccess(reason){
 
 function stopAll(msg){running=false;clearTimeout(timer);setUI();setStatus('已停止');log('■ '+msg)}
 
-window.addEventListener('error',function(){log('页面脚本异常,请截图反馈')});
+showIdentity();
 </script>
 </body>
 </html>
