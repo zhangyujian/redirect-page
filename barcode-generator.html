@@ -224,6 +224,7 @@
     }
 
     #barcode-output { max-width: 100%; height: auto; }
+    #barcode-output[hidden], #error-state[hidden] { display: none; }
     .error-state { color: var(--danger); text-align: center; }
     .error-state small { display: block; margin-top: 6px; color: var(--muted); }
     .privacy { margin: 14px 0 0; color: var(--muted); text-align: center; font-size: 11px; }
@@ -292,7 +293,7 @@
           <label class="field">
             <span class="label-row"><b>条形码内容</b><small id="char-count">12 / 80</small></span>
             <span class="input-wrap">
-              <input id="barcode-value" type="text" value="690123456789" maxlength="80" autocomplete="off" spellcheck="false">
+              <input id="barcode-value" type="text" value="690123456789" maxlength="80" autocomplete="off" spellcheck="false" aria-describedby="value-error format-hint">
               <button class="clear-button" id="clear-value" type="button">清空</button>
             </span>
             <span class="field-error" id="value-error" role="alert"></span>
@@ -374,7 +375,7 @@
     </div>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
-  <script src="barcode-generator.js"></script>
+  <script src="assets/vendor/JsBarcode.all-3.11.6.min.js"></script>
+  <script src="barcode-generator.js?v=2"></script>
 </body>
 </html>

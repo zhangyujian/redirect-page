@@ -10,6 +10,8 @@
     displayValue: document.querySelector("#display-value"),
     output: document.querySelector("#barcode-output"),
     errorState: document.querySelector("#error-state"),
+    errorTitle: document.querySelector("#error-state strong"),
+    errorDetail: document.querySelector("#error-state small"),
     error: document.querySelector("#value-error"),
     charCount: document.querySelector("#char-count"),
     widthOutput: document.querySelector("#width-output"),
@@ -58,11 +60,12 @@
     const value = elements.value.value.trim();
 
     if (!value) {
-      elements.error.textContent = "请输入需要生成条形码的内容。";
-      elements.output.hidden = true;
-      elements.errorState.hidden = false;
-      validBarcode = false;
-      setActionsEnabled(false);
+      showError("等待输入", "请输入需要生成条形码的内容。");
+      return;
+    }
+
+    if (typeof window.JsBarcode !== "function") {
+      showError("生成组件未加载", "条形码组件加载失败，请刷新页面后重试。", false);
       return;
     }
 
@@ -84,17 +87,31 @@
       });
 
       elements.error.textContent = "";
-      elements.output.hidden = false;
+      elements.value.removeAttribute("aria-invalid");
+      elements.output.removeAttribute("hidden");
       elements.errorState.hidden = true;
       validBarcode = true;
       setActionsEnabled(true);
     } catch (error) {
-      elements.error.textContent = "当前内容不符合该条码格式，请参考格式说明。";
-      elements.output.hidden = true;
-      elements.errorState.hidden = false;
-      validBarcode = false;
-      setActionsEnabled(false);
+      if (error.message === "INVALID_BARCODE") {
+        showError("内容不符合所选格式", formatInfo[elements.format.value][1]);
+      } else {
+        showError("暂时无法生成", "生成条形码时出现异常，请刷新页面后重试。", false);
+        console.error("Barcode rendering failed:", error);
+      }
     }
+  }
+
+  function showError(title, message, inputError = true) {
+    elements.error.textContent = message;
+    elements.errorTitle.textContent = title;
+    elements.errorDetail.textContent = message;
+    elements.value.setAttribute("aria-invalid", String(inputError));
+    // SVG elements do not consistently implement the HTML hidden property.
+    elements.output.setAttribute("hidden", "");
+    elements.errorState.hidden = false;
+    validBarcode = false;
+    setActionsEnabled(false);
   }
 
   function getSvgSource() {
