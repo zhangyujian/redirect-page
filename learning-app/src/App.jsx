@@ -1021,6 +1021,7 @@ function NotesPage({ distro }) {
   const [activeNoteId, setActiveNoteId] = useState(() => notes[0]?.id || 'note-1')
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [saveError, setSaveError] = useState(false)
+  const noteItemsRef = useRef(null)
   const activeNote = notes.find((note) => note.id === activeNoteId) || notes[0]
   useEffect(() => { setSaveError(!writeSaved(storageKey, notes)) }, [storageKey, notes])
 
@@ -1028,6 +1029,7 @@ function NotesPage({ distro }) {
     const note = { id: `note-${Date.now()}`, title: '新建学习笔记', content: '', updatedAt: Date.now() }
     setNotes((current) => [note, ...current])
     setActiveNoteId(note.id)
+    noteItemsRef.current?.scrollTo({ top: 0, left: 0 })
   }
 
   function updateActiveNote(content) {
@@ -1061,7 +1063,8 @@ function NotesPage({ distro }) {
       <div className="notes-layout">
         <div className="notes-list">
           <button className="new-note" onClick={createNote}><NotebookPen/> 新建笔记</button>
-          {notes.map((note) => <div className={`note-item-wrap ${note.id === activeNote.id ? 'active' : ''}`} key={note.id}><button className="note-item" onClick={() => setActiveNoteId(note.id)}><span>{new Date(note.updatedAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}</span><strong>{note.title.trim() || '未命名笔记'}</strong><small>{note.content ? '已编辑' : '空白笔记'}</small></button><button className="delete-note" onClick={(event) => { event.stopPropagation(); setDeleteTarget(note) }} aria-label={`删除${note.title.trim() || '未命名笔记'}`} title="删除笔记"><X size={15} /></button></div>)}
+          <p className="notes-list-hint">共 {notes.length} 篇笔记 · 上下滑动列表选择笔记</p>
+          <div ref={noteItemsRef} className="note-items" role="group" aria-label="选择学习笔记">{notes.map((note) => <div className={`note-item-wrap ${note.id === activeNote.id ? 'active' : ''}`} key={note.id}><button className="note-item" onClick={() => setActiveNoteId(note.id)} aria-pressed={note.id === activeNote.id}><span>{new Date(note.updatedAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}</span><strong>{note.title.trim() || '未命名笔记'}</strong><small>{note.content ? '已编辑' : '空白笔记'}</small></button><button className="delete-note" onClick={(event) => { event.stopPropagation(); setDeleteTarget(note) }} aria-label={`删除${note.title.trim() || '未命名笔记'}`} title="删除笔记"><X size={18} /></button></div>)}</div>
         </div>
         <div className="editor-wrap">
           <div className="editor-toolbar"><input className="note-title-input" value={activeNote.title} onChange={(event) => updateActiveNoteTitle(event.target.value)} placeholder="输入笔记名称" aria-label="笔记名称" /><span>{saveError ? '保存失败，请复制备份' : 'MARKDOWN · 自动保存'}</span></div>
@@ -1290,7 +1293,7 @@ function App() {
         {user && syncState === 'loading' ? <div className="page cloud-loading" role="status"><ShieldCheck /><h2>正在读取账户的学习进度</h2><p>加载完成后将恢复你的课程与靶场记录。</p></div> : pages[active]}
         <footer><span>SECURITY PATH // {distro.shortName.toUpperCase()} // LEARN RESPONSIBLY</span><span>课程内容仅用于合法授权环境</span></footer>
       </main>
-      <nav className="mobile-learning-nav" aria-label="快捷学习导航">{navItems.filter(item => item.id !== 'distros').map(item => <button key={item.id} aria-current={active === item.id ? 'page' : undefined} onClick={() => { setActive(item.id); if (item.id === 'commands') openCommand() }}><item.icon size={20} /><span>{item.label}</span></button>)}</nav>
+      <nav className="mobile-learning-nav" aria-label="快捷学习导航">{navItems.filter(item => item.id !== 'distros').map(item => <button key={item.id} aria-label={item.label} aria-current={active === item.id ? 'page' : undefined} onClick={() => { setActive(item.id); if (item.id === 'commands') openCommand() }}><item.icon size={20} /><span>{{ dashboard: '总览', courses: '课程', certifications: '认证', practice: '靶场', commands: '手册', notes: '笔记' }[item.id]}</span></button>)}</nav>
       {panel === 'search' && <GlobalSearch onClose={() => setPanel(null)} onNavigate={setActive} onSelectDistro={setSelectedDistro} onOpenCommand={openCommand} onOpenCourse={openCourse} onSelectCertification={selectCertification} />}
       {panel === 'help' && <HelpPanel onClose={() => setPanel(null)} onNavigate={setActive} />}
       {panel === 'profile' && (user

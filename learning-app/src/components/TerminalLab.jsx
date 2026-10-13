@@ -93,7 +93,7 @@ export default function TerminalLab({ onMissionComplete, distro }) {
         : <div className={item.type === 'system' ? 'terminal-system' : `terminal-output ${item.type === 'error' ? 'terminal-error' : ''}`} key={index}>{item.lines.map((line, lineIndex) => <div key={lineIndex}>{line || '\u00a0'}</div>)}</div>)}
       <form className="terminal-input-line" onSubmit={event => { event.preventDefault(); run(input) }}>
         <span className="prompt">{sandbox.user}@path</span><span className="colon">:</span><span className="path">{displayPath(sandbox)}</span><span className="dollar">$</span>
-        <input ref={inputRef} value={input} onChange={event => { setInput(event.target.value); setSuggestions([]); historyPosition.current = null }} onKeyDown={onKeyDown} aria-label="模拟终端命令" autoComplete="off" spellCheck="false" maxLength={4096} />
+        <input ref={inputRef} value={input} onChange={event => { setInput(event.target.value); setSuggestions([]); historyPosition.current = null }} onKeyDown={onKeyDown} aria-label="模拟终端命令" autoComplete="off" autoCapitalize="none" autoCorrect="off" enterKeyHint="send" spellCheck="false" maxLength={4096} />
         <button type="submit" aria-label="运行命令"><ArrowRight size={18} /></button>
       </form>
       {suggestions.length > 0 && <div className="sandbox-completions" aria-label="命令补全建议">{suggestions.map(command => <button key={command} onClick={() => fill(command)}>{command}</button>)}</div>}

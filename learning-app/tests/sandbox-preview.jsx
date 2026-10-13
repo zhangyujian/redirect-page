@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import TerminalLab from '../src/components/TerminalLab.jsx'
 import { distroCatalog } from '../src/App.jsx'
 import '../src/styles.css'
+import '../src/mobile.css'
 
 function Preview() {
   const [id, setId] = useState('blackarch')
