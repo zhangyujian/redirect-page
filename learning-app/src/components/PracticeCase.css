@@ -1,0 +1,119 @@
+.practice-case-library { margin: 0 0 30px; padding: 24px; border: 1px solid #23465a; border-radius: 12px; background: #0b1825; color: #bacbdd; font-size: 16px; line-height: 1.8; }
+.case-library-heading, .case-section-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
+.case-library-heading h3 { display: flex; align-items: center; gap: 10px; margin: 8px 0 0; color: #e7f3fc; font-size: 22px; }
+.practice-case-library svg, .practice-case-reader svg { width: 18px; height: 18px; flex-shrink: 0; }
+.case-library-heading h3 svg { color: #48d5f0; }
+.case-count, .case-duration { font-size: 14px; color: #a9c2d5; }
+.case-preview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
+.case-preview { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 20px; background: #0d1e2d; border: 1px solid #2a4055; border-radius: 10px; }
+.case-tags { display: flex; flex-wrap: wrap; gap: 8px; color: #a9dcf1; font-size: 13px; line-height: 1.7; }
+.case-tags > span { padding: 2px 8px; background: #122c3c; border-radius: 4px; }
+.case-preview h4 { margin: 0; font-size: 18px; line-height: 1.7; color: #e5f0f9; }
+.case-preview p { margin: 0; font-size: 16px; line-height: 1.8; }
+.case-preview .case-duration { margin-top: auto; padding-top: 5px; }
+.practice-case-library button, .practice-case-reader button, .case-course-entry { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 9px 12px; border-radius: 7px; border: 1px solid #2c5b72; background: #103248; color: #b1eeff; font-size: 14px; font-weight: 600; line-height: 1.6; cursor: pointer; }
+.practice-case-library button:hover, .practice-case-reader button:hover:not(:disabled), .case-course-entry:hover { background: #17445c; border-color: #5ad7ef; }
+.practice-case-reader { color: #c0d0df; font-size: 16px; line-height: 1.85; overflow-wrap: anywhere; }
+.practice-case-reader h2 { margin: 18px 0 12px; color: #ecf5fe; font-size: 28px; line-height: 1.5; }
+.practice-case-reader h3 { display: flex; gap: 10px; align-items: center; color: #e2effa; font-size: 20px; line-height: 1.6; margin: 0 0 14px; }
+.practice-case-reader h3 svg { color: #4ed7f2; }
+.practice-case-reader h4 { margin: 20px 0 8px; color: #dbedf9; font-size: 17px; line-height: 1.7; }
+.practice-case-reader h5 { margin: 18px 0 6px; font-size: 16px; line-height: 1.7; color: #d6eaf6; }
+.practice-case-reader p { margin: 10px 0 16px; }
+.practice-case-reader ul, .practice-case-reader ol { padding-left: 24px; }
+.practice-case-reader li + li { margin-top: 10px; }
+.case-contents { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.case-contents a { display: flex; align-items: center; min-height: 44px; padding: 6px 10px; color: #96e8fa; border: 1px solid #2a465a; border-radius: 6px; text-decoration: underline; text-underline-offset: 4px; font-size: 14px; }
+.case-block { margin-top: 30px; padding-top: 26px; border-top: 1px solid #294052; scroll-margin-top: 18px; }
+.case-safety { display: flex; align-items: flex-start; gap: 12px; padding: 16px; border: 1px solid #31554f; background: #102822; border-radius: 8px; color: #bae3d5; font-size: 15px; }
+.case-safety > svg { margin-top: 7px; }
+.case-safety p { margin: 0; }
+.case-safety strong { display: block; margin-bottom: 4px; }
+.case-prerequisite { padding: 14px; border: 1px solid #76633e; background: #262219; color: #eddbb5; font-size: 15px; border-radius: 8px; }
+.case-reasoning li { padding: 4px 4px 8px; }
+.case-reasoning h4 { margin-top: 6px; }
+.case-session-info { padding: 18px; border: 1px solid #305c72; background: #0c2433; border-radius: 10px; margin: 16px 0; }
+.case-session-info > strong { color: #97e9f8; font-size: 16px; }
+.case-session-info p { font-size: 14px; line-height: 1.8; }
+.case-reset-confirm { border-top: 1px solid #486478; margin-top: 16px; }
+.case-reset-confirm button { margin: 0 8px 8px 0; }
+.case-step-list { display: grid; gap: 14px; }
+.case-step { border: 1px solid #2d4559; border-radius: 9px; background: #0c1723; overflow: hidden; }
+.case-step > h4 { margin: 0; }
+.case-step > h4 > button { width: 100%; border: 0; background: transparent; border-radius: 0; padding: 16px; justify-content: flex-start; text-align: left; color: #d9ebf8; font-size: 17px; }
+.case-step-number { display: flex; align-items: center; justify-content: center; flex: 0 0 30px; height: 30px; color: #62e3f5; background: #123047; border-radius: 6px; font-size: 14px; }
+.case-step > h4 > button > span:nth-child(2) { flex: 1; min-width: 0; }
+.case-step.is-open > h4 > button > svg { transform: rotate(180deg); }
+.case-step-body { padding: 0 18px 20px; border-top: 1px solid #263f52; }
+.case-code-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; font-size: 15px; }
+.practice-case-reader pre { margin: 12px 0 18px; padding: 15px; border-radius: 7px; background: #050d16; border: 1px solid #2a4056; color: #d1ecfa; font: 14px/1.9 var(--mono, monospace); white-space: pre-wrap; overflow-wrap: anywhere; overflow-x: auto; }
+.practice-case-reader pre code { font: inherit; color: inherit; background: none; padding: 0; }
+.case-decision { background: #102c2b; border-left: 3px solid #57caae; padding: 14px; border-radius: 4px; margin: 18px 0; }
+.case-decision p { margin: 6px 0 0; }
+.practice-case-reader .case-run-button { min-height: 46px; background: #15465c; border-color: #37758e; font-size: 15px; }
+.practice-case-reader button:disabled { cursor: not-allowed; opacity: .55; }
+.case-step-result { margin-top: 16px; color: #9ae6c8; font-size: 14px; }
+.case-step-result.unexpected { color: #ffbdad; }
+.case-step-result pre { max-height: 300px; overflow: auto; margin-bottom: 0; }
+.case-copy-status { font-size: 14px; color: #8ddfe9; }
+.case-finished { display: flex; gap: 10px; padding: 16px; background: #12342c; border-radius: 8px; color: #a2ecd2; }
+.case-finished svg { margin-top: 5px; }
+.case-diagnostic { border: 1px solid #2d4559; background: #0d1c2a; border-radius: 8px; margin: 12px 0; }
+.case-diagnostic summary { padding: 15px; min-height: 48px; cursor: pointer; color: #b2e5f9; font-size: 16px; font-weight: 600; line-height: 1.7; }
+.case-diagnostic > div, .case-diagnostic > p { padding: 0 16px 12px; }
+.case-diagnostic pre { margin: 0 14px 14px; }
+.case-checklist { display: grid; gap: 12px; }
+.case-checklist label { display: flex; gap: 12px; align-items: flex-start; padding: 13px; border: 1px solid #2b4658; border-radius: 8px; cursor: pointer; }
+.case-checklist input { flex: 0 0 20px; width: 20px; height: 20px; margin-top: 6px; accent-color: #32cbed; }
+.case-sources > p { font-size: 14px; }
+.case-sources > a { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 15px; border: 1px solid #294457; border-radius: 8px; text-decoration: none; color: #90e4f7; }
+.case-sources > a strong { font-size: 16px; text-decoration: underline; text-underline-offset: 4px; }
+.case-sources small { display: block; margin-top: 8px; color: #a9c1d3; font-size: 14px; line-height: 1.8; }
+.case-reader-footer { margin-top: 28px; display: flex; justify-content: flex-end; }
+.case-course-entry { margin: 10px 0 16px; text-align: left; }
+.course-workspace-modal .chapter-nav button.case-chapter-link { margin-top: 8px; border-color: #2c6275; background: #0c2735; color: #aeeaf7; }
+.course-workspace-modal .chapter-nav button.case-chapter-link strong { white-space: normal; }
+.case-learning-guide { display: grid; gap: 5px; padding: 15px 18px; border-left: 3px solid #55cee9; background: #10293b; border-radius: 6px; font-size: 16px; }
+.case-learning-guide strong { color: #d3f2fe; }
+.case-library-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 22px; }
+.case-level-filter { display: flex; flex-wrap: wrap; gap: 8px; }
+.case-level-filter button { font-size: 15px; }
+.case-level-filter button span { padding: 0 5px; border-radius: 4px; background: #081e2a; font-variant-numeric: tabular-nums; }
+.case-level-filter button[aria-pressed="true"] { color: #e0f8ff; background: #18546b; border-color: #69dcf3; box-shadow: inset 0 -2px #69dcf3; }
+.case-search { flex: 1 1 260px; display: flex; align-items: center; gap: 10px; min-width: 0; padding: 10px 13px; background: #071623; border: 1px solid #396174; border-radius: 7px; color: #a5dcea; }
+.case-search input { flex: 1; min-width: 0; width: 100%; padding: 2px 0; background: transparent; color: #e1eff8; font: inherit; font-size: 16px; border: 0; outline: 0; }
+.case-search input::placeholder { color: #9db5c6; opacity: 1; }
+.case-search:focus-within { outline: 2px solid #6ce1f4; outline-offset: 3px; }
+.case-search-label { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.practice-case-library .case-result-count { margin: 12px 0 0; font-size: 15px; color: #aacbdb; }
+.case-advanced-preview { border-color: #536c8e; background: linear-gradient(135deg, #152437, #0d1e2d); }
+.case-advanced-preview .case-tags > span:last-child { color: #e0dcff; background: #343150; }
+.case-analysis-summary { font-size: 14px; color: #b8d9ef; line-height: 1.8; }
+.case-library-empty { padding: 20px; text-align: center; }
+.case-advanced-analysis { border-top-color: #56789a; }
+.case-analysis-note { padding: 14px 16px; background: #122a3a; border: 1px solid #385570; border-radius: 8px; color: #c2dce9; font-size: 15px; }
+.case-stop-conditions { margin-top: 20px; padding: 18px; background: #292318; border: 1px solid #746044; border-radius: 8px; color: #eedec0; }
+.case-stop-conditions h4 { display: flex; gap: 10px; align-items: center; margin-top: 0; color: #f2deaf; }
+.case-stop-conditions ul { margin-bottom: 0; }
+.case-related-courses { display: grid; gap: 9px; margin: 12px 0 22px; }
+.case-related-courses > p { margin: 0; color: #a8c9dc; font-size: 15px; line-height: 1.8; }
+.case-related-courses .case-course-entry { justify-content: flex-start; width: 100%; margin: 0; font-size: 15px; white-space: normal; overflow-wrap: anywhere; }
+.case-related-courses .case-course-entry > svg { flex-shrink: 0; }
+.practice-case-reader button:focus-visible, .practice-case-library button:focus-visible, .practice-case-reader a:focus-visible, .practice-case-reader summary:focus-visible, .practice-case-reader input:focus-visible, .practice-case-reader pre:focus-visible, .case-course-entry:focus-visible { outline: 2px solid #6ce1f4; outline-offset: 3px; }
+@media (max-width: 650px) {
+  .practice-case-library { padding: 18px 14px; }
+  .case-preview-grid { grid-template-columns: minmax(0, 1fr); }
+  .case-preview { padding: 16px; }
+  .practice-case-reader h2 { font-size: 24px; }
+  .practice-case-reader h3 { font-size: 18px; }
+  .case-step > h4 > button { font-size: 16px; padding: 14px 12px; }
+  .case-step-body { padding: 0 12px 16px; }
+  .case-session-info { padding: 14px; }
+  .case-contents { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .course-workspace-modal .chapter-nav button.case-chapter-link { grid-column: 1 / -1; margin-top: 0; min-height: 44px; }
+  .case-library-tools { gap: 12px; }
+  .case-level-filter { width: 100%; }
+  .case-level-filter button { flex: 1 1 auto; padding: 8px; }
+  .case-search { flex-basis: 100%; }
+  .case-stop-conditions, .case-learning-guide { padding: 14px; }
+}

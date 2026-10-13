@@ -1,0 +1,34 @@
+.interactive-sandbox { min-width: 0; }
+.sandbox-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: #101b29; color: #adbdcf; font-size: 14px; }
+.sandbox-toolbar>div { display: flex; flex-wrap: wrap; gap: 8px; }
+.sandbox-toolbar button, .sandbox-reset button, .sandbox-exercise-tabs button, .sandbox-completions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 12px; min-height: 38px; color: #aceaff; border: 1px solid #29485d; background: #102331; border-radius: 6px; font-size: 14px; cursor: pointer; }
+.interactive-sandbox button:hover { border-color: var(--cyan); background-color: #163246; }
+.interactive-sandbox button:focus-visible, .interactive-sandbox input:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.interactive-sandbox .terminal-body { height: 370px; font-size: 14px; line-height: 1.8; overflow-wrap: anywhere; }
+.interactive-sandbox .terminal-input-line { flex-wrap: wrap; }
+.interactive-sandbox .terminal-input-line input { font-size: 14px; min-width: 140px; min-height: 38px; }
+.interactive-sandbox .terminal-input-line button { min-width: 38px; min-height: 38px; }
+.interactive-sandbox .terminal-error { color: #ffa898; }
+.sandbox-footer { border-top: 1px solid var(--line); padding: 12px 16px; font-size: 13px; line-height: 1.7; color: #99adbe; }
+.sandbox-guide { padding: 16px; border-bottom: 1px solid var(--line); background: #0d1824; }
+.sandbox-exercise-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.sandbox-exercise-tabs .selected { color: #061924; background: #80e6ff; border-color: #80e6ff; }
+.sandbox-guide>p { font-size: 14px; line-height: 1.7; color: #a1b5c8; }
+.sandbox-guide ol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0; margin: 12px 0 0; list-style: none; }
+.sandbox-guide li { display: flex; gap: 10px; align-items: flex-start; min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 7px; background: #09121d; }
+.sandbox-guide li>span { color: #92a7b9; min-width: 27px; font-size: 13px; padding-top: 2px; }
+.sandbox-guide li>span.step-done { color: #53e5b0; }
+.sandbox-guide li button { min-width: 0; flex: 1; text-align: left; color: #cfdeee; cursor: pointer; background: transparent; border: none; padding: 0; border-radius: 2px; }
+.sandbox-guide strong { display: block; font-size: 14px; line-height: 1.7; }
+.sandbox-guide code { display: block; font-size: 13px; line-height: 1.7; margin-top: 4px; color: #82e0fc; overflow-wrap: anywhere; }
+.sandbox-reset { padding: 16px; color: #f1cbc4; font-size: 14px; line-height: 1.7; background: #281d23; border-bottom: 1px solid #68424a; }
+.sandbox-reset p { margin: 0 0 12px; }
+.sandbox-reset button { margin-right: 8px; }
+.sandbox-completions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.sandbox-completions button { max-width: 100%; overflow-wrap: anywhere; text-align: left; }
+@media (max-width: 700px) {
+  .sandbox-guide ol { grid-template-columns: 1fr; }
+  .interactive-sandbox .terminal-body { padding: 14px 12px; font-size: 13px !important; }
+  .interactive-sandbox .terminal-input-line input { font-size: 14px !important; }
+  .sandbox-toolbar { padding: 12px; }
+}
