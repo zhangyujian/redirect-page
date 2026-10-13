@@ -32,3 +32,20 @@ The layout uses dynamic viewport units, safe-area insets and the Chromium
 `interactive-widget=resizes-content` hint. Physical mobile keyboard behavior,
 browser-specific safe areas and older browsers still need real-device checks.
 User zoom remains enabled.
+
+## Notes Interaction Regression
+
+The 2026-10-13 follow-up checked actual keyboard actions, not only form fills:
+
+- Enter in the note-name input moves focus to the body; IME composition Enter
+  is left to the input method.
+- Enter in the body inserts a newline. Backspace and Delete remove characters.
+- Saving and reloading preserve multiline content and the selected note.
+- Switching notes keeps their titles and content independent.
+- Canceling delete leaves the note unchanged; confirming the last deletion
+  produces an empty list, not a replacement blank note.
+- Deleted notes can be restored after a page reload, including their content.
+- Finish editing blurs the inputs and restores the mobile bottom navigation.
+- At 320px, every editor action is at least 44px high and stays inside the page.
+- Storage-failure unit tests verify that delete and restore keep at least one
+  persisted active or recovery copy even when a write fails.

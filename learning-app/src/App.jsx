@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import {
   ArrowLeft,
   ArrowRight,
@@ -49,6 +49,8 @@ import LearningOverview from './components/LearningOverview'
 import CertificationsPage from './components/CertificationsPage'
 import { certifications } from './data/certifications'
 import { learningRouteUrl, readLearningRoute, recommendedLesson } from './data/learningNavigation'
+import { createLearningNote, createNotebook, notesReducer, persistNotebook as saveNotebookRecord } from './data/notes'
+import './components/NotesPage.css'
 
 export const distroCatalog = {
   kali: {
@@ -1017,61 +1019,104 @@ function Practice({ completed, setCompleted, distro, courseProgress, onNavigate,
 
 function NotesPage({ distro }) {
   const storageKey = `security-path-notes-v2-${distro.id}`
-  const [notes, setNotes] = useState(() => readSaved(storageKey, [{ id: 'note-1', title: '新建学习笔记', content: '', updatedAt: Date.now() }]))
-  const [activeNoteId, setActiveNoteId] = useState(() => notes[0]?.id || 'note-1')
+  const trashKey = `security-path-notes-trash-v1-${distro.id}`
+  const activeKey = `security-path-notes-active-v1-${distro.id}`
+  const [notebook, dispatch] = useReducer(notesReducer, null, () => createNotebook(readSaved(storageKey, []), readSaved(trashKey, []), readSaved(activeKey, null)))
+  const { notes, trash, activeId } = notebook
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [saveError, setSaveError] = useState(false)
-  const noteItemsRef = useRef(null)
-  const activeNote = notes.find((note) => note.id === activeNoteId) || notes[0]
-  useEffect(() => { setSaveError(!writeSaved(storageKey, notes)) }, [storageKey, notes])
+  const [notice, setNotice] = useState('')
+  const noteItemsRef = useRef(null), editorRef = useRef(null), titleRef = useRef(null), contentRef = useRef(null), focusFrame = useRef(null)
+  const activeNote = notes.find((note) => note.id === activeId) || notes[0]
+
+  function persistNotebook() {
+    let saved = false
+    try { saved = saveNotebookRecord(localStorage, storageKey, trashKey, notebook, activeKey) } catch { /* Storage can be disabled by the browser. */ }
+    setSaveError(!saved)
+    return saved
+  }
+
+  useEffect(() => { persistNotebook() }, [storageKey, trashKey, activeKey, notes, trash, activeId])
+  useEffect(() => () => window.cancelAnimationFrame(focusFrame.current), [])
+
+  function focusEditor(field = 'content') {
+    window.cancelAnimationFrame(focusFrame.current)
+    focusFrame.current = window.requestAnimationFrame(() => {
+      const input = field === 'title' ? titleRef.current : contentRef.current
+      input?.focus({ preventScroll: true })
+      editorRef.current?.scrollIntoView({ block: 'start', behavior: 'auto' })
+    })
+  }
 
   function createNote() {
-    const note = { id: `note-${Date.now()}`, title: '新建学习笔记', content: '', updatedAt: Date.now() }
-    setNotes((current) => [note, ...current])
-    setActiveNoteId(note.id)
+    dispatch({ type: 'create', note: createLearningNote() })
+    setNotice('已新建笔记。填写名称后按回车进入正文。')
     noteItemsRef.current?.scrollTo({ top: 0, left: 0 })
+    focusEditor('title')
   }
 
-  function updateActiveNote(content) {
-    setNotes((current) => current.map((note) => note.id === activeNote.id ? { ...note, content, updatedAt: Date.now() } : note))
+  function selectNote(id) {
+    dispatch({ type: 'select', id })
+    setNotice('')
+    focusEditor()
   }
 
-  function updateActiveNoteTitle(title) {
-    setNotes((current) => current.map((note) => note.id === activeNote.id ? { ...note, title, updatedAt: Date.now() } : note))
+  function editNote(field, value) {
+    dispatch({ type: 'edit', id: activeNote.id, field, value, now: Date.now() })
+    setNotice('')
+  }
+
+  function saveNow() {
+    setNotice(persistNotebook() ? '已保存到当前浏览器。' : '保存失败，内容仍在当前页面，请先复制正文备份。')
+  }
+
+  function enterBody(event) {
+    if (event.key !== 'Enter' || event.nativeEvent.isComposing || event.keyCode === 229) return
+    event.preventDefault()
+    contentRef.current?.focus()
   }
 
   function deleteNote() {
     if (!deleteTarget) return
-    if (notes.length === 1) {
-      const note = { id: deleteTarget.id, title: '', content: '', updatedAt: Date.now() }
-      setNotes([note])
-      setActiveNoteId(note.id)
-    } else {
-      const remaining = notes.filter((note) => note.id !== deleteTarget.id)
-      setNotes(remaining)
-      if (deleteTarget.id === activeNoteId) setActiveNoteId(remaining[0].id)
-    }
+    dispatch({ type: 'delete', id: deleteTarget.id, now: Date.now() })
     setDeleteTarget(null)
+    setNotice('笔记已移入本机回收站，可点击“恢复最近删除”找回。')
+  }
+
+  function restoreNote() {
+    if (!trash.length) return
+    dispatch({ type: 'restore', id: trash[0].id })
+    setNotice('笔记已恢复，名称和正文均已保留。')
+    noteItemsRef.current?.scrollTo({ top: 0, left: 0 })
+    focusEditor()
   }
 
   return (
     <div className="page notes-page">
       <section className="page-intro compact">
-        <div><span className="section-kicker">{distro.shortName.toUpperCase()} LEARNING NOTES</span><h2>{distro.shortName} 学习笔记</h2><p>记录命令、思路和每次练习后的复盘。</p></div>
-        <div className="save-state" role="status"><CheckCircle2/> {saveError ? '本机保存受限' : '已自动保存'}</div>
+        <div><span className="section-kicker">{distro.shortName.toUpperCase()} LEARNING NOTES</span><h2>{distro.shortName} 学习笔记</h2><p>选择或新建笔记 → 编辑名称和正文 → 自动保存到本机。</p></div>
+        <div className="save-state" role="status"><CheckCircle2/> {saveError ? '本机保存失败，请备份正文' : '已保存到本机'}</div>
       </section>
+      {notice && <p className="notes-notice" role="status">{notice}</p>}
       <div className="notes-layout">
         <div className="notes-list">
-          <button className="new-note" onClick={createNote}><NotebookPen/> 新建笔记</button>
+          <button type="button" className="new-note" onClick={createNote}><NotebookPen/> 新建笔记</button>
           <p className="notes-list-hint">共 {notes.length} 篇笔记 · 上下滑动列表选择笔记</p>
-          <div ref={noteItemsRef} className="note-items" role="group" aria-label="选择学习笔记">{notes.map((note) => <div className={`note-item-wrap ${note.id === activeNote.id ? 'active' : ''}`} key={note.id}><button className="note-item" onClick={() => setActiveNoteId(note.id)} aria-pressed={note.id === activeNote.id}><span>{new Date(note.updatedAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}</span><strong>{note.title.trim() || '未命名笔记'}</strong><small>{note.content ? '已编辑' : '空白笔记'}</small></button><button className="delete-note" onClick={(event) => { event.stopPropagation(); setDeleteTarget(note) }} aria-label={`删除${note.title.trim() || '未命名笔记'}`} title="删除笔记"><X size={18} /></button></div>)}</div>
+          <div ref={noteItemsRef} className="note-items" role="group" aria-label="选择学习笔记">{notes.map((note) => <div className={`note-item-wrap ${note.id === activeNote?.id ? 'active' : ''}`} key={note.id}><button type="button" className="note-item" onClick={() => selectNote(note.id)} aria-pressed={note.id === activeNote?.id}><span>{new Date(note.updatedAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}</span><strong>{note.title.trim() || '未命名笔记'}</strong><small>{note.content ? '已编辑' : '空白笔记'}</small></button><button type="button" className="delete-note" onClick={() => setDeleteTarget(note)} aria-label={`删除${note.title.trim() || '未命名笔记'}`} title="删除笔记"><X size={18} /></button></div>)}</div>
+          {trash.length > 0 && <button type="button" className="notes-restore" onClick={restoreNote}><RotateCcw size={16} />恢复最近删除（{trash.length}）</button>}
         </div>
-        <div className="editor-wrap">
-          <div className="editor-toolbar"><input className="note-title-input" value={activeNote.title} onChange={(event) => updateActiveNoteTitle(event.target.value)} placeholder="输入笔记名称" aria-label="笔记名称" /><span>{saveError ? '保存失败，请复制备份' : 'MARKDOWN · 自动保存'}</span></div>
-          <textarea value={activeNote.content} onChange={(event) => updateActiveNote(event.target.value)} spellCheck="false" aria-label="学习笔记" placeholder={`从这里开始记录你的 ${distro.shortName} 学习内容...`} />
-        </div>
+        {activeNote ? <section ref={editorRef} className="editor-wrap note-editor" aria-label="笔记编辑器">
+          <div className="editor-toolbar">
+            <label className="note-title-label" htmlFor="learning-note-title">笔记名称<span>按回车进入正文</span></label>
+            <input ref={titleRef} id="learning-note-title" className="note-title-input" value={activeNote.title} onChange={event => editNote('title', event.target.value)} onKeyDown={enterBody} enterKeyHint="next" placeholder="输入笔记名称" aria-label="笔记名称" autoComplete="off" />
+            <div className="note-editor-actions"><button type="button" onClick={() => focusEditor()}>编辑正文</button><button type="button" onClick={saveNow}>保存更改</button><button type="button" onClick={event => { titleRef.current?.blur(); contentRef.current?.blur(); event.currentTarget.blur(); saveNow() }}>完成编辑</button><button type="button" className="note-editor-delete" onClick={() => setDeleteTarget(activeNote)}><X size={16} />删除笔记</button></div>
+          </div>
+          <label className="note-content-label" htmlFor="learning-note-content">笔记正文<span>可直接输入；回车换行，退格或 Delete 删除文字。</span></label>
+          <textarea ref={contentRef} id="learning-note-content" value={activeNote.content} onChange={event => editNote('content', event.target.value)} onKeyDown={event => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') { event.preventDefault(); saveNow() } }} spellCheck="false" aria-label="学习笔记" enterKeyHint="enter" placeholder={`在这里输入你的 ${distro.shortName} 学习记录，支持多行文字和 Markdown。`} />
+          <p className="note-editor-help">{saveError ? '自动保存失败，请复制正文备份，再点击“保存更改”重试。' : '修改自动保存到当前浏览器；笔记尚不支持账户云同步。'}</p>
+        </section> : <section className="notes-empty" aria-label="暂无笔记"><NotebookPen size={32} /><h3>还没有笔记</h3><p>点击“新建笔记”开始记录。删除的笔记可从左侧或上方恢复。</p><button type="button" className="primary-button" onClick={createNote}>创建第一篇笔记</button></section>}
       </div>
-      {deleteTarget && <Modal title="确认删除笔记" eyebrow="DELETE NOTE" onClose={() => setDeleteTarget(null)}><div className="confirm-dialog"><p>确定要删除“{deleteTarget.title.trim() || '未命名笔记'}”吗？删除后内容将无法恢复。</p><div className="modal-actions"><button className="secondary-button" onClick={() => setDeleteTarget(null)}>取消</button><button className="danger-button" onClick={deleteNote}>确认删除</button></div></div></Modal>}
+      {deleteTarget && <Modal title="确认删除笔记" eyebrow="DELETE NOTE" onClose={() => setDeleteTarget(null)}><div className="confirm-dialog"><p>确定要删除“{deleteTarget.title.trim() || '未命名笔记'}”吗？笔记将移入本机回收站，之后可点击“恢复最近删除”找回。</p><div className="modal-actions"><button type="button" className="secondary-button" onClick={() => setDeleteTarget(null)}>取消</button><button type="button" className="danger-button" onClick={deleteNote}>确认删除</button></div></div></Modal>}
     </div>
   )
 }
