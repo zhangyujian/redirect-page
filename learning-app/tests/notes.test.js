@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { createLearningNote, createNotebook, notesReducer, persistNotebook } from '../src/data/notes.js'
+import { createLearningNote, createNotebook, filterNotes, NOTE_CATEGORIES, noteCategories, noteCategory, notePreview, noteRecordedTime, notesReducer, persistNotebook } from '../src/data/notes.js'
 
 const first = { id: 'a', title: 'First', content: 'Original\nSecond line', updatedAt: 1 }
 const second = { id: 'b', title: 'Second', content: 'Keep me', updatedAt: 2 }
@@ -11,6 +11,9 @@ test('new notebooks can be empty and rapid creation uses distinct identities', (
   assert.notEqual(a.id, b.id)
   assert.equal(a.content, '')
   assert.equal(a.title, '')
+  assert.equal(a.createdAt, 100)
+  assert.equal(a.updatedAt, 100)
+  assert.equal(a.category, '未分类')
   assert.notEqual(createLearningNote(100, () => null).id, createLearningNote(100, () => null).id)
 })
 
@@ -133,4 +136,65 @@ test('failed restore persistence never removes the only recovery copy', () => {
     const copies = [...JSON.parse(storage.getItem('notes')), ...JSON.parse(storage.getItem('trash'))]
     assert.equal(copies.some(note => note.id === 'a' && note.content === first.content), true)
   }
+})
+
+test('editing sticky-note fields updates modification time but preserves creation time', () => {
+  const note = createLearningNote(100)
+  let state = createNotebook([note])
+  for (const [field, value] of [['title', '标题'], ['category', '靶场复盘'], ['content', '第一行\n第二行']]) {
+    state = notesReducer(state, { type: 'edit', id: note.id, field, value, now: 200 })
+    assert.equal(state.notes[0].createdAt, 100)
+    assert.equal(state.notes[0].updatedAt, 200)
+  }
+  assert.deepEqual(noteRecordedTime(state.notes[0]), { value: 100, source: 'created' })
+})
+
+test('legacy notes remain unchanged and do not receive fabricated creation dates', () => {
+  const state = createNotebook([first])
+  assert.deepEqual(state.notes[0], first)
+  assert.equal(noteCategory(first), '未分类')
+  assert.deepEqual(noteRecordedTime(first), { value: 1, source: 'updated' })
+  assert.equal(Object.hasOwn(first, 'createdAt'), false)
+  assert.deepEqual(noteRecordedTime({}), { value: null, source: 'unknown' })
+  assert.deepEqual(noteRecordedTime({ createdAt: Infinity, updatedAt: 20 }), { value: 20, source: 'updated' })
+  assert.deepEqual(noteRecordedTime({ createdAt: 9e15 }), { value: null, source: 'unknown' })
+})
+
+test('category counts include defaults, custom categories and unclassified legacy notes', () => {
+  const notes = [first, { ...second, category: '课程笔记' }, { ...first, id: 'c', category: ' 自定义项目 ' }, { ...first, id: 'd', category: '自定义项目' }]
+  const categories = noteCategories(notes)
+  assert.equal(categories.find(category => category.name === '未分类').count, 1)
+  assert.equal(categories.find(category => category.name === '课程笔记').count, 1)
+  assert.equal(categories.find(category => category.name === '自定义项目').count, 2)
+  assert.equal(categories.length, NOTE_CATEGORIES.length + 1)
+  assert.equal(noteCategory({ category: '   ' }), '未分类')
+})
+
+test('category filters keep original order and support a custom category named all', () => {
+  const notes = [first, { ...second, category: 'all' }, { ...first, id: 'c', category: '课程笔记' }]
+  const snapshot = structuredClone(notes)
+  assert.equal(filterNotes(notes), notes)
+  assert.deepEqual(filterNotes(notes, 'all'), [notes[1]])
+  assert.deepEqual(filterNotes(notes, '课程笔记'), [notes[2]])
+  assert.deepEqual(filterNotes(notes, '未分类'), [notes[0]])
+  assert.deepEqual(filterNotes(notes, 'missing'), [])
+  assert.deepEqual(notes, snapshot)
+})
+
+test('body previews preserve actual multiline text and do not cut Unicode characters in half', () => {
+  assert.equal(notePreview({ content: '  第一行\n\n第二行  ' }), '第一行\n\n第二行')
+  assert.equal(notePreview({ content: '🙂中文记录' }, 3), '🙂中文...')
+  assert.equal(notePreview({ content: '<script>alert(1)</script>' }), '<script>alert(1)</script>')
+  assert.equal(notePreview({ content: '   ' }), '')
+  assert.equal(notePreview({}), '')
+})
+
+test('classification, body and timestamps survive deletion, recovery and JSON persistence', () => {
+  const note = { ...createLearningNote(100), title: '课程复盘', category: '自定义项目', content: '真实正文\n第二行' }
+  const removed = notesReducer(createNotebook([note]), { type: 'delete', id: note.id, now: 300 })
+  const loaded = createNotebook([], JSON.parse(JSON.stringify(removed.trash)))
+  const restored = notesReducer(loaded, { type: 'restore', id: note.id })
+  assert.deepEqual(restored.notes, [note])
+  assert.equal(notePreview(restored.notes[0]), note.content)
+  assert.equal(noteCategory(restored.notes[0]), '自定义项目')
 })

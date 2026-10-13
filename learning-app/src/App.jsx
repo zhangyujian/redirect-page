@@ -49,7 +49,7 @@ import LearningOverview from './components/LearningOverview'
 import CertificationsPage from './components/CertificationsPage'
 import { certifications } from './data/certifications'
 import { learningRouteUrl, readLearningRoute, recommendedLesson } from './data/learningNavigation'
-import { createLearningNote, createNotebook, notesReducer, persistNotebook as saveNotebookRecord } from './data/notes'
+import { createLearningNote, createNotebook, filterNotes, NOTE_CATEGORIES, noteCategories, noteCategory, notePreview, noteRecordedTime, notesReducer, persistNotebook as saveNotebookRecord } from './data/notes'
 import './components/NotesPage.css'
 
 export const distroCatalog = {
@@ -1026,8 +1026,18 @@ function NotesPage({ distro }) {
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [saveError, setSaveError] = useState(false)
   const [notice, setNotice] = useState('')
-  const noteItemsRef = useRef(null), editorRef = useRef(null), titleRef = useRef(null), contentRef = useRef(null), focusFrame = useRef(null)
+  const [categoryFilter, setCategoryFilter] = useState(null)
+  const [visibleCount, setVisibleCount] = useState(12)
+  const noteItemsRef = useRef(null), boardRef = useRef(null), editorRef = useRef(null), titleRef = useRef(null), contentRef = useRef(null), focusFrame = useRef(null)
   const activeNote = notes.find((note) => note.id === activeId) || notes[0]
+  const categories = noteCategories(notes)
+  const filteredNotes = filterNotes(notes, categoryFilter)
+  const editorVisible = activeNote && (categoryFilter === null || noteCategory(activeNote) === categoryFilter)
+  const dateFormatter = useMemo(() => new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }), [])
+
+  function formatTime(value) {
+    return Number.isFinite(value) && value > 0 && Number.isFinite(new Date(value).getTime()) ? dateFormatter.format(value) : '未记录'
+  }
 
   function persistNotebook() {
     let saved = false
@@ -1049,8 +1059,9 @@ function NotesPage({ distro }) {
   }
 
   function createNote() {
-    dispatch({ type: 'create', note: createLearningNote() })
-    setNotice('已新建笔记。填写名称后按回车进入正文。')
+    dispatch({ type: 'create', note: { ...createLearningNote(), category: categoryFilter === null ? '未分类' : categoryFilter } })
+    setVisibleCount(12)
+    setNotice('已新建便签。填写标题、分类和正文，记录时间会自动保存。')
     noteItemsRef.current?.scrollTo({ top: 0, left: 0 })
     focusEditor('title')
   }
@@ -1062,12 +1073,34 @@ function NotesPage({ distro }) {
   }
 
   function editNote(field, value) {
+    if (field === 'category') setCategoryFilter(null)
     dispatch({ type: 'edit', id: activeNote.id, field, value, now: Date.now() })
     setNotice('')
   }
 
   function saveNow() {
     setNotice(persistNotebook() ? '已保存到当前浏览器。' : '保存失败，内容仍在当前页面，请先复制正文备份。')
+  }
+
+  function finishEditing(event) {
+    titleRef.current?.blur()
+    contentRef.current?.blur()
+    event.currentTarget.blur()
+    saveNow()
+    const activeIndex = filteredNotes.findIndex(note => note.id === activeId)
+    if (activeIndex >= visibleCount) setVisibleCount(activeIndex + 1)
+    window.cancelAnimationFrame(focusFrame.current)
+    focusFrame.current = window.requestAnimationFrame(() => {
+      boardRef.current?.scrollIntoView({ block: 'start', behavior: 'auto' })
+      noteItemsRef.current?.querySelector('.sticky-note.active')?.scrollIntoView({ block: 'nearest', behavior: 'auto' })
+    })
+  }
+
+  function changeCategoryFilter(category) {
+    setCategoryFilter(category)
+    setVisibleCount(12)
+    const matching = filterNotes(notes, category)
+    if (matching.length && !matching.some(note => note.id === activeId)) dispatch({ type: 'select', id: matching[0].id })
   }
 
   function enterBody(event) {
@@ -1078,7 +1111,9 @@ function NotesPage({ distro }) {
 
   function deleteNote() {
     if (!deleteTarget) return
+    const nextInCategory = filterNotes(notes.filter(note => note.id !== deleteTarget.id), categoryFilter)[0]
     dispatch({ type: 'delete', id: deleteTarget.id, now: Date.now() })
+    if (deleteTarget.id === activeId && nextInCategory) dispatch({ type: 'select', id: nextInCategory.id })
     setDeleteTarget(null)
     setNotice('笔记已移入本机回收站，可点击“恢复最近删除”找回。')
   }
@@ -1086,6 +1121,8 @@ function NotesPage({ distro }) {
   function restoreNote() {
     if (!trash.length) return
     dispatch({ type: 'restore', id: trash[0].id })
+    setCategoryFilter(null)
+    setVisibleCount(12)
     setNotice('笔记已恢复，名称和正文均已保留。')
     noteItemsRef.current?.scrollTo({ top: 0, left: 0 })
     focusEditor()
@@ -1094,27 +1131,36 @@ function NotesPage({ distro }) {
   return (
     <div className="page notes-page">
       <section className="page-intro compact">
-        <div><span className="section-kicker">{distro.shortName.toUpperCase()} LEARNING NOTES</span><h2>{distro.shortName} 学习笔记</h2><p>选择或新建笔记 → 编辑名称和正文 → 自动保存到本机。</p></div>
+        <div><span className="section-kicker">{distro.shortName.toUpperCase()} LEARNING NOTES</span><h2>{distro.shortName} 学习便签</h2><p>标题、分类、时间一目了然，点开便签编辑全文。</p></div>
         <div className="save-state" role="status"><CheckCircle2/> {saveError ? '本机保存失败，请备份正文' : '已保存到本机'}</div>
       </section>
       {notice && <p className="notes-notice" role="status">{notice}</p>}
-      <div className="notes-layout">
-        <div className="notes-list">
-          <button type="button" className="new-note" onClick={createNote}><NotebookPen/> 新建笔记</button>
-          <p className="notes-list-hint">共 {notes.length} 篇笔记 · 上下滑动列表选择笔记</p>
-          <div ref={noteItemsRef} className="note-items" role="group" aria-label="选择学习笔记">{notes.map((note) => <div className={`note-item-wrap ${note.id === activeNote?.id ? 'active' : ''}`} key={note.id}><button type="button" className="note-item" onClick={() => selectNote(note.id)} aria-pressed={note.id === activeNote?.id}><span>{new Date(note.updatedAt).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}</span><strong>{note.title.trim() || '未命名笔记'}</strong><small>{note.content ? '已编辑' : '空白笔记'}</small></button><button type="button" className="delete-note" onClick={() => setDeleteTarget(note)} aria-label={`删除${note.title.trim() || '未命名笔记'}`} title="删除笔记"><X size={18} /></button></div>)}</div>
+      <div className="notes-layout notes-board-layout">
+        <section ref={boardRef} className="notes-list notes-board" aria-label="学习便签列表">
+          <div className="notes-board-heading"><div><h3>我的便签</h3><p>点击便签编辑全文，完成编辑后返回这里。</p></div><button type="button" className="new-note" onClick={createNote}><NotebookPen/> 新建笔记</button></div>
+          <div className="notes-board-controls"><label htmlFor="note-category-filter">按分类查看<select id="note-category-filter" value={categoryFilter ?? ''} onChange={event => changeCategoryFilter(event.target.value || null)}><option value="">全部分类（{notes.length}）</option>{categories.map(category => <option key={category.name} value={category.name}>{category.name}（{category.count}）</option>)}</select></label><p role="status">共 {notes.length} 篇 · 当前分类 {filteredNotes.length} 篇</p></div>
+          <div ref={noteItemsRef} className="note-items note-card-grid" role="group" aria-label="选择学习笔记">{filteredNotes.slice(0, visibleCount).map(note => {
+            const category = noteCategory(note)
+            const time = noteRecordedTime(note)
+            const preview = notePreview(note)
+            const tone = ['plain', 'blue', 'green', 'amber', 'violet', 'plain'][NOTE_CATEGORIES.indexOf(category)] || 'violet'
+            return <article className={`note-item-wrap sticky-note tone-${tone} ${note.id === activeNote?.id ? 'active' : ''}`} key={note.id}><button type="button" className="note-item sticky-note-open" onClick={() => selectNote(note.id)} aria-label={`打开笔记：${note.title.trim() || '未命名笔记'}`} aria-pressed={note.id === activeNote?.id}><span className="sticky-note-category">{category}</span><strong>{note.title.trim() || '未命名笔记'}</strong><span className="sticky-note-time"><Clock3 size={14} />{time.source === 'created' ? '创建' : '记录'}：{time.value ? <time dateTime={new Date(time.value).toISOString()}>{formatTime(time.value)}</time> : '未记录时间'}</span><span className={`sticky-note-preview ${preview ? '' : 'is-empty'}`}>{preview || '还没有正文，点击记录你的学习内容。'}</span><span className="sticky-note-footer">{time.source === 'updated' ? '旧笔记时间取自最后更新' : '点击查看 / 编辑全文'}<ArrowRight size={15} /></span></button><button type="button" className="delete-note" onClick={() => setDeleteTarget(note)} aria-label={`删除${note.title.trim() || '未命名笔记'}`} title="删除笔记"><X size={18} /></button></article>
+          })}</div>
+          {!filteredNotes.length && <p className="notes-board-empty">{notes.length ? '这个分类还没有便签，可以在此分类中新建一篇。' : '还没有便签，点击“新建笔记”开始记录。'}</p>}
+          {filteredNotes.length > visibleCount && <button type="button" className="notes-load-more" onClick={() => setVisibleCount(count => count + 12)}>显示更多便签（还有 {filteredNotes.length - visibleCount} 篇）</button>}
           {trash.length > 0 && <button type="button" className="notes-restore" onClick={restoreNote}><RotateCcw size={16} />恢复最近删除（{trash.length}）</button>}
-        </div>
-        {activeNote ? <section ref={editorRef} className="editor-wrap note-editor" aria-label="笔记编辑器">
+        </section>
+        {editorVisible ? <section ref={editorRef} className="editor-wrap note-editor" aria-label="笔记编辑器">
           <div className="editor-toolbar">
-            <label className="note-title-label" htmlFor="learning-note-title">笔记名称<span>按回车进入正文</span></label>
+            <label className="note-title-label" htmlFor="learning-note-title">便签标题<span>按回车进入正文</span></label>
             <input ref={titleRef} id="learning-note-title" className="note-title-input" value={activeNote.title} onChange={event => editNote('title', event.target.value)} onKeyDown={enterBody} enterKeyHint="next" placeholder="输入笔记名称" aria-label="笔记名称" autoComplete="off" />
-            <div className="note-editor-actions"><button type="button" onClick={() => focusEditor()}>编辑正文</button><button type="button" onClick={saveNow}>保存更改</button><button type="button" onClick={event => { titleRef.current?.blur(); contentRef.current?.blur(); event.currentTarget.blur(); saveNow() }}>完成编辑</button><button type="button" className="note-editor-delete" onClick={() => setDeleteTarget(activeNote)}><X size={16} />删除笔记</button></div>
+            <div className="note-editor-metadata"><label className="note-category-label" htmlFor="learning-note-category">便签分类<span>可选择，也可输入自定义分类</span><input id="learning-note-category" list="note-category-suggestions" value={activeNote.category ?? ''} placeholder="未分类" aria-label="便签分类" maxLength={40} onChange={event => editNote('category', event.target.value)} onBlur={event => { if (event.target.value !== noteCategory(activeNote)) editNote('category', noteCategory(activeNote)) }} onKeyDown={enterBody} enterKeyHint="next" autoComplete="off" /></label><datalist id="note-category-suggestions">{categories.map(category => <option value={category.name} key={category.name} />)}</datalist><dl className="note-time-details"><div><dt>创建时间</dt><dd>{Number.isFinite(activeNote.createdAt) && activeNote.createdAt > 0 ? formatTime(activeNote.createdAt) : '旧笔记未记录创建时间'}</dd></div><div><dt>上次更新</dt><dd>{formatTime(activeNote.updatedAt)}</dd></div></dl></div>
+            <div className="note-editor-actions"><button type="button" onClick={() => focusEditor()}>编辑正文</button><button type="button" onClick={saveNow}>保存更改</button><button type="button" onClick={finishEditing}>完成编辑</button><button type="button" className="note-editor-delete" onClick={() => setDeleteTarget(activeNote)}><X size={16} />删除笔记</button></div>
           </div>
           <label className="note-content-label" htmlFor="learning-note-content">笔记正文<span>可直接输入；回车换行，退格或 Delete 删除文字。</span></label>
           <textarea ref={contentRef} id="learning-note-content" value={activeNote.content} onChange={event => editNote('content', event.target.value)} onKeyDown={event => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') { event.preventDefault(); saveNow() } }} spellCheck="false" aria-label="学习笔记" enterKeyHint="enter" placeholder={`在这里输入你的 ${distro.shortName} 学习记录，支持多行文字和 Markdown。`} />
           <p className="note-editor-help">{saveError ? '自动保存失败，请复制正文备份，再点击“保存更改”重试。' : '修改自动保存到当前浏览器；笔记尚不支持账户云同步。'}</p>
-        </section> : <section className="notes-empty" aria-label="暂无笔记"><NotebookPen size={32} /><h3>还没有笔记</h3><p>点击“新建笔记”开始记录。删除的笔记可从左侧或上方恢复。</p><button type="button" className="primary-button" onClick={createNote}>创建第一篇笔记</button></section>}
+        </section> : <section className="notes-empty" aria-label="暂无笔记"><NotebookPen size={32} /><h3>{notes.length ? '这个分类还没有便签' : '还没有笔记'}</h3><p>新建便签后可以填写标题、分类和多行正文。误删的笔记可从上方恢复。</p><button type="button" className="primary-button" onClick={createNote}>{notes.length ? '在此分类新建便签' : '创建第一篇笔记'}</button></section>}
       </div>
       {deleteTarget && <Modal title="确认删除笔记" eyebrow="DELETE NOTE" onClose={() => setDeleteTarget(null)}><div className="confirm-dialog"><p>确定要删除“{deleteTarget.title.trim() || '未命名笔记'}”吗？笔记将移入本机回收站，之后可点击“恢复最近删除”找回。</p><div className="modal-actions"><button type="button" className="secondary-button" onClick={() => setDeleteTarget(null)}>取消</button><button type="button" className="danger-button" onClick={deleteNote}>确认删除</button></div></div></Modal>}
     </div>

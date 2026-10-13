@@ -49,3 +49,20 @@ The 2026-10-13 follow-up checked actual keyboard actions, not only form fills:
 - At 320px, every editor action is at least 44px high and stays inside the page.
 - Storage-failure unit tests verify that delete and restore keep at least one
   persisted active or recovery copy even when a write fails.
+
+## Sticky-Note Board
+
+- New cards display title, category, creation time and actual multiline body
+  previews. Old notes keep their content and display their last known update
+  time with an explicit legacy-record label.
+- Preset and custom categories persist after reload. Creating in an empty
+  selected category inherits that category.
+- Category filters show only matching cards and select a matching editor record.
+  Deleting the active filtered card keeps the next selection in that category.
+- A 13-note browser check verified the initial 12 cards, loading the remainder,
+  opening the oldest card and changing its category without hiding the card
+  when returning from the editor.
+- At 320px, 390px and 430px the document stays within the viewport. Finish editing
+  returns to the selected card with mobile navigation space reserved.
+- Enter still moves from the title to the body; the body retains line breaks.
+- Creation time stays fixed when the body or category changes; update time changes.
